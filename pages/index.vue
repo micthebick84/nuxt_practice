@@ -22,6 +22,9 @@
     </div>
   </q-page>
 </template>
+<script lang="ts">
+console.log('index.vue');
+</script>
 <script setup lang="ts">
 const { courses } = useCourses();
 </script>

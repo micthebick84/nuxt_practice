@@ -2,9 +2,13 @@
   <q-layout view="hHh lpR fFf" class="bg-grey-2">
     <q-header elevated class="bg-dark text-white">
       <q-toolbar>
-        <q-btn stretch flat label="Home" to="/" />
+        <NuxtLink v-slot="{ navigate }" custom to="/">
+          <q-btn stretch flat label="Home" @click="navigate" />
+        </NuxtLink>
         <q-separator dark vertical />
-        <q-btn stretch flat label="About" to="/about" />
+        <NuxtLink v-slot="{ navigate }" custom to="/about">
+          <q-btn stretch flat label="About" @click="navigate" />
+        </NuxtLink>
       </q-toolbar>
     </q-header>
     <q-page-container :style="pageContainerStyle">
