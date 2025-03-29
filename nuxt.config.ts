@@ -11,4 +11,13 @@ export default defineNuxtConfig({
     /* */
   },
   alias: {},
+  imports: {
+    presets: [
+      {
+        from: 'vue-i18n',
+        imports: ['useI18n'],
+      },
+    ],
+  },
+  ssr: true,
 });
