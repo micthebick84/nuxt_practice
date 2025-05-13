@@ -86,25 +86,30 @@ type LoginForm = {
   email: string
   password: string
   rememberMe: boolean
+  redirect: string
 }
 
 // State
 const form = reactive<LoginForm>({
   email: '',
   password: '',
-  rememberMe: false
+  rememberMe: false,
+  redirect: ''
 })
 
 const authStore = useAuthStore()
+const route = useRoute()
+const router = useRouter()
 
 // Methods
 const login = async () => {
   try {
     // 실제 인증 로직으로 대체하세요
-    await authStore.login(form.email, form.password)
+    await authStore.login(form.email, form.password);
     
-    // 로그인 성공 시 리다이렉트
-    await navigateTo('/')
+    // 로그인 성공 시 이전 페이지나 홈으로 리다이렉트
+    const redirectTo = form.redirect || '/';
+    await navigateTo(redirectTo, { external: false });
   } catch (error) {
     console.error('로그인 실패:', error)
     // 에러 처리 로직 추가
@@ -112,12 +117,16 @@ const login = async () => {
 }
 
 // Check for successful registration
-const route = useRoute()
 onMounted(() => {
   if (route.query.registered === 'true') {
-    alert('회원가입이 완료되었습니다. 로그인해주세요.')
-    // Clear the query parameter
-    navigateTo('/login', { replace: true })
+    alert('회원가입이 완료되었습니다. 로그인해주세요.');
+  }
+  
+  // 로그인 후 리다이렉트할 경로 설정 (쿼리 파라미터에서 가져오기)
+  if (route.query.redirect) {
+    form.redirect = Array.isArray(route.query.redirect) 
+      ? route.query.redirect[0] 
+      : route.query.redirect;
   }
 })
 

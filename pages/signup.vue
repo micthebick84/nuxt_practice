@@ -88,8 +88,8 @@
 <script setup lang="ts">
 import { reactive, computed, onMounted } from 'vue';
 import { useAuthStore } from '~/stores/auth';
-const router = useRouter();
 
+const router = useRouter();
 const authStore = useAuthStore();
 
 // Form state
@@ -99,8 +99,6 @@ const form = reactive({
   passwordConfirm: '',
   agreeTerms: false
 });
-
-const router = useRouter();
 
 // Form validation
 const formValid = computed(() => {

@@ -27,4 +27,9 @@ console.log('index.vue');
 </script>
 <script setup lang="ts">
 const { courses } = useCourses();
+
+// 페이지 메타데이터 설정 - 인증이 필요한 페이지로 설정
+definePageMeta({
+  middleware: ['auth']
+});
 </script>
