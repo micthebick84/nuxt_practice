@@ -16,6 +16,11 @@
           <q-btn stretch flat :label="$t('admin')" @click="navigate" />
         </NuxtLink>
         <q-separator dark vertical />
+        <!-- 로그아웃 버튼 -->
+        <q-btn v-if="authStore.isAuthenticated" stretch flat @click="handleLogout">
+          로그아웃
+        </q-btn>
+        <q-separator v-if="authStore.isAuthenticated" dark vertical />
         <q-btn-dropdown stretch flat no-caps :label="selectedLanguageName">
           <q-list padding dense>
             <q-item
@@ -41,6 +46,19 @@
 </template>
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
+import { useAuthStore } from '~/stores/auth';
+
+const authStore = useAuthStore();
+
+// 페이지가 마운트될 때 인증 상태 초기화
+onMounted(() => {
+  authStore.initializeAuth();
+});
+
+const handleLogout = async () => {
+  await authStore.logout();
+  navigateTo('/login');
+};
 
 const pageContainerStyle = computed(() => ({
   maxWidth: '1080px',

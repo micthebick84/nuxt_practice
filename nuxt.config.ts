@@ -6,9 +6,15 @@ export default defineNuxtConfig({
     typeCheck: false,
   },
   devtools: { enabled: true },
-  modules: ['nuxt-quasar-ui'],
+  modules: [
+    'nuxt-quasar-ui',
+    '@pinia/nuxt',
+  ],
   quasar: {
     /* */
+  },
+  pinia: {
+    autoImports: ['defineStore', 'acceptHMRUpdate'],
   },
   alias: {},
   imports: {
@@ -20,4 +26,7 @@ export default defineNuxtConfig({
     ],
   },
   ssr: true,
+  router: {
+    middleware: ['auth']
+  },
 });
