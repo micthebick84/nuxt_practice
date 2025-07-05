@@ -10,15 +10,13 @@
           <q-btn stretch flat :label="$t('about')" @click="navigate" />
         </NuxtLink>
         <q-separator dark vertical />
-        <q-btn stretch flat :label="$t('youtube')" @click="moveYoutube" />
-        <q-separator dark vertical />
         <NuxtLink v-slot="{ navigate }" custom to="/admin">
           <q-btn stretch flat :label="$t('admin')" @click="navigate" />
         </NuxtLink>
         <q-separator dark vertical />
         <!-- 로그아웃 버튼 -->
         <q-btn v-if="authStore.isAuthenticated" stretch flat @click="handleLogout">
-          로그아웃
+          {{ $t('logout') }}
         </q-btn>
         <q-separator v-if="authStore.isAuthenticated" dark vertical />
         <q-btn-dropdown stretch flat no-caps :label="selectedLanguageName">
@@ -49,6 +47,7 @@ import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '~/stores/auth';
 
 const authStore = useAuthStore();
+const { t } = useI18n();
 
 // 페이지가 마운트될 때 인증 상태 초기화
 onMounted(() => {
@@ -56,21 +55,17 @@ onMounted(() => {
 });
 
 const handleLogout = async () => {
-  await authStore.logout();
-  navigateTo('/login');
+  const confirmed = confirm(t('logoutConfirm'));
+  if (confirmed) {
+    await authStore.logout();
+    navigateTo('/login');
+  }
 };
 
 const pageContainerStyle = computed(() => ({
   maxWidth: '1080px',
   margin: '0 auto',
 }));
-
-const moveYoutube = async () => {
-  await navigateTo('https://youtube.com/@gymcoding', {
-    external: true,
-    open: { target: '_blank' },
-  });
-};
 
 interface Language {
   name: string;
