@@ -23,8 +23,6 @@ console.log('index.vue');
 </script>
 
 <script setup lang="ts">
-const { courses } = useCourses();
-
 // Page metadata configuration - set as page requiring authentication
 definePageMeta({
   middleware: ['auth']

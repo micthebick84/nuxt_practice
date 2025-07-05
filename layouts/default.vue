@@ -21,6 +21,15 @@
 
         <q-space />
 
+        <!-- Language Switcher -->
+        <q-btn-dropdown flat :label="currentLanguageName">
+          <q-list>
+            <q-item v-for="lang in languages" :key="lang.code" clickable @click="setLanguage(lang.code)">
+              <q-item-section>{{ lang.name }}</q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
+
         <!-- Logout button -->
         <q-btn
           flat
@@ -40,9 +49,10 @@
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '~/stores/auth'
 import { useRoute } from 'vue-router'
+import { computed } from 'vue'
 
 const authStore = useAuthStore()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const tab = ref('home')
 const route = useRoute()
 
@@ -69,11 +79,12 @@ const handleLogout = () => {
   }
 }
 
-// Language options for future i18n implementation
 const languages = [
   { name: 'English', code: 'en' },
   { name: 'Korean', code: 'ko' },
 ]
+const currentLanguageName = computed(() => languages.find(l => l.code === locale.value)?.name || 'Language')
+const setLanguage = (code: string) => { locale.value = code }
 </script>
 
 <style scoped>
