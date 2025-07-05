@@ -9,6 +9,7 @@ export default defineNuxtPlugin(({ vueApp }) => {
       en: {
         home: 'Home',
         about: 'About',
+        test: 'Test',
         admin: 'Admin',
         logout: 'Logout',
         logoutConfirm: 'Are you sure you want to logout?',
@@ -18,6 +19,7 @@ export default defineNuxtPlugin(({ vueApp }) => {
       ko: {
         home: '홈',
         about: '어바웃',
+        test: '테스트',
         admin: '관리자',
         logout: '로그아웃',
         logoutConfirm: '정말로 로그아웃을 하시겠습니까?',

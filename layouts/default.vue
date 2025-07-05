@@ -2,12 +2,25 @@
   <q-layout view="hHh lpR fFf" class="bg-grey-2">
     <q-header elevated class="bg-dark text-white">
       <q-toolbar>
+        <!-- 로고/아이콘 영역 -->
+        <div class="q-mr-md">
+          <img 
+            src="https://via.placeholder.com/32x32/ffffff/000000?text=Logo" 
+            alt="Logo" 
+            style="width: 32px; height: 32px; border-radius: 4px;"
+          />
+        </div>
+        <q-separator dark vertical />
         <NuxtLink v-slot="{ navigate }" custom to="/">
           <q-btn stretch flat :label="$t('home')" @click="navigate" />
         </NuxtLink>
         <q-separator dark vertical />
         <NuxtLink v-slot="{ navigate }" custom to="/about">
           <q-btn stretch flat :label="$t('about')" @click="navigate" />
+        </NuxtLink>
+        <q-separator dark vertical />
+        <NuxtLink v-slot="{ navigate }" custom to="/test">
+          <q-btn stretch flat :label="$t('test')" @click="navigate" />
         </NuxtLink>
         <q-separator dark vertical />
         <NuxtLink v-slot="{ navigate }" custom to="/admin">
