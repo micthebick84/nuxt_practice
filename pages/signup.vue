@@ -3,12 +3,12 @@
     <div class="max-w-md w-full space-y-8">
       <div>
         <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          회원가입
+          Sign Up
         </h2>
         <p class="mt-2 text-center text-sm text-gray-600">
-          이미 계정이 있으신가요?
+          Already have an account?
           <NuxtLink to="/login" class="font-medium text-indigo-600 hover:text-indigo-500">
-            로그인
+            Login
           </NuxtLink>
         </p>
       </div>
@@ -16,7 +16,7 @@
       <form class="mt-8 space-y-6" @submit.prevent="handleSignup">
         <div class="rounded-md shadow-sm -space-y-px">
           <div>
-            <label for="email" class="sr-only">이메일 주소</label>
+            <label for="email" class="sr-only">Email address</label>
             <input
               id="email"
               v-model="form.email"
@@ -25,11 +25,11 @@
               autocomplete="email"
               required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              placeholder="이메일 주소"
+              placeholder="Email address"
             />
           </div>
           <div>
-            <label for="password" class="sr-only">비밀번호</label>
+            <label for="password" class="sr-only">Password</label>
             <input
               id="password"
               v-model="form.password"
@@ -38,11 +38,11 @@
               autocomplete="new-password"
               required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              placeholder="비밀번호"
+              placeholder="Password"
             />
           </div>
           <div>
-            <label for="password-confirm" class="sr-only">비밀번호 확인</label>
+            <label for="password-confirm" class="sr-only">Confirm password</label>
             <input
               id="password-confirm"
               v-model="form.passwordConfirm"
@@ -51,7 +51,7 @@
               autocomplete="new-password"
               required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              placeholder="비밀번호 확인"
+              placeholder="Confirm password"
             />
           </div>
         </div>
@@ -66,8 +66,9 @@
             class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
           />
           <label for="terms" class="ml-2 block text-sm text-gray-900">
-            <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">이용약관</a> 및
-            <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">개인정보처리방침</a>에 동의합니다
+            I agree to the
+            <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Terms of Service</a> and
+            <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Privacy Policy</a>
           </label>
         </div>
 
@@ -77,7 +78,7 @@
             class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             :disabled="!formValid"
           >
-            가입하기
+            Sign Up
           </button>
         </div>
       </form>
@@ -115,21 +116,21 @@ const handleSignup = async () => {
   if (!formValid.value) return;
 
   try {
-    // 여기에 회원가입 API 호출 로직 추가
-    // 예: await authStore.register(form);
+    // Add signup API call logic here
+    // Example: await authStore.register(form);
     
-    // 임시로 회원가입 성공 후 자동 로그인 처리
+    // Temporarily handle auto-login after successful signup
     await authStore.login(form.email, form.password);
     
-    // 회원가입 및 로그인 성공 시 홈으로 이동
+    // Navigate to home after successful signup and login
     await navigateTo('/');
   } catch (error) {
-    console.error('회원가입 실패:', error);
-    alert('회원가입 중 오류가 발생했습니다.');
+    console.error('Signup failed:', error);
+    alert('An error occurred during signup.');
   }
 };
 
-// 이미 로그인한 사용자는 회원가입 페이지에 접근하지 못하도록
+// Prevent already logged-in users from accessing signup page
 onMounted(() => {
   authStore.initializeAuth();
   if (authStore.isAuthenticated) {

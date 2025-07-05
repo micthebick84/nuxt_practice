@@ -3,12 +3,12 @@
     <div class="max-w-md w-full space-y-8">
       <div>
         <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          로그인
+          Login
         </h2>
         <p class="mt-2 text-center text-sm text-gray-600">
-          또는
+          or
           <NuxtLink to="/signup" class="font-medium text-indigo-600 hover:text-indigo-500">
-            회원가입
+            Sign up
           </NuxtLink>
         </p>
       </div>
@@ -16,7 +16,7 @@
         <input type="hidden" name="remember" value="true" />
         <div class="rounded-md shadow-sm -space-y-px">
           <div>
-            <label for="email-address" class="sr-only">이메일 주소</label>
+            <label for="email-address" class="sr-only">Email address</label>
             <input
               id="email-address"
               v-model="form.email"
@@ -25,11 +25,11 @@
               autocomplete="email"
               required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              placeholder="이메일 주소"
+              placeholder="Email address"
             />
           </div>
           <div>
-            <label for="password" class="sr-only">비밀번호</label>
+            <label for="password" class="sr-only">Password</label>
             <input
               id="password"
               v-model="form.password"
@@ -38,7 +38,7 @@
               autocomplete="current-password"
               required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              placeholder="비밀번호"
+              placeholder="Password"
             />
           </div>
         </div>
@@ -53,13 +53,13 @@
               class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
             />
             <label for="remember-me" class="ml-2 block text-sm text-gray-900">
-              로그인 상태 유지
+              Remember me
             </label>
           </div>
 
           <div class="text-sm">
             <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">
-              비밀번호를 잊으셨나요?
+              Forgot your password?
             </a>
           </div>
         </div>
@@ -69,7 +69,7 @@
             type="submit"
             class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
-            로그인
+            Login
           </button>
         </div>
       </form>
@@ -104,29 +104,29 @@ const router = useRouter()
 // Methods
 const login = async () => {
   try {
-    // 실제 인증 로직으로 대체하세요
+    // Replace with actual authentication logic
     await authStore.login(form.email, form.password);
     
-    // 로그인 성공 시 이전 페이지나 홈으로 리다이렉트
+    // Redirect to previous page or home after successful login
     const redirectTo = form.redirect || '/';
     await navigateTo(redirectTo, { external: false });
   } catch (error) {
-    console.error('로그인 실패:', error)
-    // 에러 처리 로직 추가
+    console.error('Login failed:', error)
+    // Add error handling logic
   }
 }
 
 // Check for successful registration
 onMounted(() => {
   if (route.query.registered === 'true') {
-    alert('회원가입이 완료되었습니다. 로그인해주세요.');
+    alert('Registration completed successfully. Please login.');
   }
   
-  // 로그인 후 리다이렉트할 경로 설정 (쿼리 파라미터에서 가져오기)
+  // Set redirect path after login (get from query parameters)
   if (route.query.redirect) {
     form.redirect = Array.isArray(route.query.redirect) 
-      ? route.query.redirect[0] 
-      : route.query.redirect;
+      ? route.query.redirect[0] || ''
+      : route.query.redirect || '';
   }
 })
 

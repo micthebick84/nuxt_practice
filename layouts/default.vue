@@ -1,98 +1,92 @@
 <template>
-  <q-layout view="hHh lpR fFf" class="bg-grey-2">
-    <q-header elevated class="bg-dark text-white">
+  <q-layout view="lHh Lpr lFf">
+    <q-header elevated class="bg-primary text-white">
       <q-toolbar>
-        <!-- 로고/아이콘 영역 -->
-        <div class="q-mr-md">
-          <img 
-            src="https://via.placeholder.com/32x32/ffffff/000000?text=Logo" 
-            alt="Logo" 
-            style="width: 32px; height: 32px; border-radius: 4px;"
-          />
-        </div>
-        <q-separator dark vertical />
-        <NuxtLink v-slot="{ navigate }" custom to="/">
-          <q-btn stretch flat :label="$t('home')" @click="navigate" />
-        </NuxtLink>
-        <q-separator dark vertical />
-        <NuxtLink v-slot="{ navigate }" custom to="/about">
-          <q-btn stretch flat :label="$t('about')" @click="navigate" />
-        </NuxtLink>
-        <q-separator dark vertical />
-        <NuxtLink v-slot="{ navigate }" custom to="/test">
-          <q-btn stretch flat :label="$t('test')" @click="navigate" />
-        </NuxtLink>
-        <q-separator dark vertical />
-        <NuxtLink v-slot="{ navigate }" custom to="/admin">
-          <q-btn stretch flat :label="$t('admin')" @click="navigate" />
-        </NuxtLink>
-        <q-separator dark vertical />
-        <!-- 로그아웃 버튼 -->
-        <q-btn v-if="authStore.isAuthenticated" stretch flat @click="handleLogout">
-          {{ $t('logout') }}
-        </q-btn>
-        <q-separator v-if="authStore.isAuthenticated" dark vertical />
-        <q-btn-dropdown stretch flat no-caps :label="selectedLanguageName">
-          <q-list padding dense>
-            <q-item
-              v-for="{ code, name } in languages"
-              :key="code"
-              v-close-popup
-              clickable
-              :active="code === $i18n.locale"
-              @click="$i18n.locale = code"
-            >
-              <q-item-section>
-                <q-item-label>{{ name }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-btn-dropdown>
+        <!-- Logo/Icon area -->
+        <q-icon name="school" size="24px" class="q-mr-sm" />
+        <q-toolbar-title>
+          <NuxtLink to="/" class="text-white text-decoration-none">
+            {{ t('home') }}
+          </NuxtLink>
+        </q-toolbar-title>
+
+        <q-space />
+
+        <q-tabs v-model="tab" class="text-white">
+          <q-tab name="home" :label="t('home')" @click="navigateTo('/')" />
+          <q-tab name="about" :label="t('about')" @click="navigateTo('/about')" />
+          <q-tab name="test" :label="t('test')" @click="navigateTo('/test')" />
+          <q-tab name="admin" :label="t('admin')" @click="navigateTo('/admin')" />
+        </q-tabs>
+
+        <q-space />
+
+        <!-- Logout button -->
+        <q-btn
+          flat
+          :label="t('logout')"
+          @click="handleLogout"
+        />
       </q-toolbar>
     </q-header>
-    <q-page-container :style="pageContainerStyle">
-      <slot></slot>
+
+    <q-page-container>
+      <NuxtPage />
     </q-page-container>
   </q-layout>
 </template>
+
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n';
-import { useAuthStore } from '~/stores/auth';
+import { useI18n } from 'vue-i18n'
+import { useAuthStore } from '~/stores/auth'
+import { useRoute } from 'vue-router'
 
-const authStore = useAuthStore();
-const { t } = useI18n();
+const authStore = useAuthStore()
+const { t } = useI18n()
+const tab = ref('home')
+const route = useRoute()
 
-// 페이지가 마운트될 때 인증 상태 초기화
+// Sync tab with current route
+watch(
+  () => route.path,
+  (path) => {
+    if (path.startsWith('/admin')) tab.value = 'admin'
+    else if (path.startsWith('/about')) tab.value = 'about'
+    else if (path.startsWith('/test')) tab.value = 'test'
+    else tab.value = 'home'
+  },
+  { immediate: true }
+)
+
 onMounted(() => {
-  authStore.initializeAuth();
-});
+  authStore.initializeAuth()
+})
 
-const handleLogout = async () => {
-  const confirmed = confirm(t('logoutConfirm'));
-  if (confirmed) {
-    await authStore.logout();
-    navigateTo('/login');
+const handleLogout = () => {
+  if (confirm(t('logoutConfirm'))) {
+    authStore.logout()
+    navigateTo('/login')
   }
-};
-
-const pageContainerStyle = computed(() => ({
-  maxWidth: '1080px',
-  margin: '0 auto',
-}));
-
-interface Language {
-  name: string;
-  code: 'en' | 'ko';
 }
 
-const languages = ref<Language[]>([
+// Language options for future i18n implementation
+const languages = [
   { name: 'English', code: 'en' },
-  { name: '한국어', code: 'ko' },
-]);
-
-const { locale } = useI18n();
-
-const selectedLanguageName = computed(
-  () => languages.value.find((lang) => lang.code === locale.value)?.name,
-);
+  { name: 'Korean', code: 'ko' },
+]
 </script>
+
+<style scoped>
+.q-tabs {
+  color: white;
+}
+
+.q-tab {
+  color: white;
+}
+
+.q-tab--active {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+</style>

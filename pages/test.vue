@@ -1,16 +1,16 @@
 <template>
   <q-page padding class="test-page">
     <div class="row">
-      <!-- 좌측 20%: jqxTreeGrid -->
+      <!-- Left 20%: jqxTreeGrid -->
       <div class="col-12 col-md-3 tree-grid-container">
         <client-only>
           <div ref="treeGridContainer" class="tree-grid-wrapper"></div>
         </client-only>
       </div>
-      <!-- 우측 80%: 기존 내용 -->
+      <!-- Right 80%: existing content -->
       <div class="col">
         <div class="q-my-xl text-center">
-          <div class="text-h4">{{ $t('test') }}</div>
+          <div class="text-h4">{{ t('test') }}</div>
           <p class="q-mt-sm text-grey-8">
             This is a test page for development purposes.
           </p>
@@ -35,11 +35,13 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const treeGridContainer = ref<HTMLDivElement | null>(null)
 
 onMounted(async () => {
-  // CDN에서 jqwidgets 로드
+  // Load jqwidgets from CDN
   const loadScript = (src: string): Promise<void> => {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script')
@@ -62,17 +64,17 @@ onMounted(async () => {
   }
 
   try {
-    // jqwidgets CSS 로드
+    // Load jqwidgets CSS
     await loadCSS('https://jqwidgets.com/public/jqwidgets/styles/jqx.base.css')
     await loadCSS('https://jqwidgets.com/public/jqwidgets/styles/jqx.material.css')
     
-    // jqwidgets CDN 스크립트들 로드
+    // Load jqwidgets CDN scripts
     await loadScript('https://jqwidgets.com/public/jqwidgets/jqx-all.js')
     
-    // DOM이 완전히 준비될 때까지 대기
+    // Wait for DOM to be fully ready
     await new Promise(resolve => setTimeout(resolve, 100))
     
-    // 샘플 그룹 데이터
+    // Sample group data
     const source = {
       dataType: 'json',
       dataFields: [
@@ -87,16 +89,16 @@ onMounted(async () => {
       },
       id: 'id',
       localData: [
-        { id: 1, name: '본사', type: '부서', parentid: null },
-        { id: 2, name: '개발팀', type: '팀', parentid: 1 },
-        { id: 3, name: '디자인팀', type: '팀', parentid: 1 },
-        { id: 4, name: '홍길동', type: '사원', parentid: 2 },
-        { id: 5, name: '김철수', type: '사원', parentid: 2 },
-        { id: 6, name: '이영희', type: '사원', parentid: 3 }
+        { id: 1, name: 'Headquarters', type: 'Department', parentid: null },
+        { id: 2, name: 'Development Team', type: 'Team', parentid: 1 },
+        { id: 3, name: 'Design Team', type: 'Team', parentid: 1 },
+        { id: 4, name: 'John Doe', type: 'Employee', parentid: 2 },
+        { id: 5, name: 'Jane Smith', type: 'Employee', parentid: 2 },
+        { id: 6, name: 'Mike Johnson', type: 'Employee', parentid: 3 }
       ]
     }
 
-    // jqxTreeGrid 생성
+    // Create jqxTreeGrid
     // @ts-ignore
     const dataAdapter = new window.jqx.dataAdapter(source)
     // @ts-ignore
@@ -106,8 +108,8 @@ onMounted(async () => {
       source: dataAdapter,
       theme: 'material',
       columns: [
-        { text: '이름', dataField: 'name', width: '60%' },
-        { text: '구분', dataField: 'type', width: '40%' }
+        { text: 'Name', dataField: 'name', width: '60%' },
+        { text: 'Type', dataField: 'type', width: '40%' }
       ]
     })
   } catch (error) {
@@ -117,7 +119,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* test 페이지에서 q-page-container의 maxWidth 제한 완전 해제 */
+/* Completely remove maxWidth restriction for q-page-container in test page */
 :deep(.q-page-container) {
   max-width: none !important;
   margin: 0 !important;
@@ -156,7 +158,7 @@ onMounted(async () => {
   box-sizing: border-box;
 }
 
-/* jqxTreeGrid 스타일 오버라이드 */
+/* jqxTreeGrid style override */
 :deep(.jqx-tree-grid) {
   border: 1px solid #ccc !important;
   font-family: Arial, sans-serif !important;
@@ -177,7 +179,7 @@ onMounted(async () => {
   padding: 8px !important;
 }
 
-/* 전체 페이지 컨테이너 스타일 */
+/* Overall page container style */
 :deep(.q-layout) {
   width: 100% !important;
 }

@@ -1,23 +1,23 @@
 module.exports = {
   root: true,
   env: {
-    browser: true, // 브라우저 환경에서 실행
-    node: true, // 노드 환경에서 실행
+    browser: true, // Execute in browser environment
+    node: true, // Execute in node environment
   },
-  parser: 'vue-eslint-parser', // Vue.js 코드를 분석할 때 사용할 파서 지정
+  parser: 'vue-eslint-parser', // Parser to use when analyzing Vue.js code
   parserOptions: {
-    ecmaVersion: 'latest', // 최신 ECMAScript 버전 사용
-    parser: '@typescript-eslint/parser', // TypeScript 코드를 파싱하는 데 사용할 파서 지정
-    sourceType: 'module', // ECMAScript 모듈 형식으로 코드 작성
+    ecmaVersion: 'latest', // Use latest ECMAScript version
+    parser: '@typescript-eslint/parser', // Parser to use for parsing TypeScript code
+    sourceType: 'module', // Write code in ECMAScript module format
   },
   plugins: ['@typescript-eslint', 'vue'],
   extends: [
-    'eslint:recommended', // ESLint에서 권장 규칙 (eslint)
-    'plugin:nuxt/recommended', // Nuxt.js 권장 규칙 (eslint-plugin-nuxt)
-    'plugin:vue/recommended', // Vue.js 권장 규칙 (eslint-plugin-vue)
-    'plugin:@typescript-eslint/recommended', // TypeScript ESLint 규칙 (@typescript-eslint/eslint-plugin)
-    '@nuxtjs/eslint-config-typescript', //  Nuxt.js 프로젝트에서 TypeScript와 함께 사용되는 ESLint 규칙 (@nuxtjs/eslint-config-typescript)
-    'plugin:prettier/recommended', // ESLint, Prettier 충돌방지 (eslint-config-prettier, eslint-plugin-prettier)
+    'eslint:recommended', // ESLint recommended rules (eslint)
+    'plugin:nuxt/recommended', // Nuxt.js recommended rules (eslint-plugin-nuxt)
+    'plugin:vue/recommended', // Vue.js recommended rules (eslint-plugin-vue)
+    'plugin:@typescript-eslint/recommended', // TypeScript ESLint rules (@typescript-eslint/eslint-plugin)
+    '@nuxtjs/eslint-config-typescript', // ESLint rules for Nuxt.js projects with TypeScript (@nuxtjs/eslint-config-typescript)
+    'plugin:prettier/recommended', // Prevent conflicts between ESLint and Prettier (eslint-config-prettier, eslint-plugin-prettier)
   ],
   rules: {
     'no-console': 'off',

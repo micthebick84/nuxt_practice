@@ -1,50 +1,63 @@
 import { defineStore } from 'pinia';
 
-type User = {
+interface User {
+  id: string;
   email: string;
-};
+  name?: string;
+}
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    isAuthenticated: false,
     user: null as User | null,
+    isAuthenticated: false,
+    isLoading: false
   }),
   
   actions: {
-    login(email: string, password: string) {
-      // 실제 인증 로직으로 대체하세요
-      // 예: API 호출 후 성공 시 아래 코드 실행
-      this.isAuthenticated = true;
-      this.user = { email };
-      
-      // 로그인 상태를 localStorage에 저장 (새로고침 시 유지)
-      if (process.client) {
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('user', JSON.stringify({ email }));
+    async login(email: string, password: string) {
+      this.isLoading = true;
+      try {
+        // Replace with actual authentication logic
+        // Example: API call, then execute the code below on success
+        
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Store login state in localStorage (persist on refresh)
+        const user = { id: '1', email, name: 'User' };
+        this.user = user;
+        this.isAuthenticated = true;
+        if (process.client) {
+          localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('isAuthenticated', 'true');
+        }
+        
+        return user;
+      } catch (error) {
+        throw error;
+      } finally {
+        this.isLoading = false;
       }
-      
-      return true;
     },
     
     logout() {
-      this.isAuthenticated = false;
       this.user = null;
-      
+      this.isAuthenticated = false;
       if (process.client) {
-        localStorage.removeItem('isAuthenticated');
         localStorage.removeItem('user');
+        localStorage.removeItem('isAuthenticated');
       }
     },
     
-    // 페이지 새로고침 시 로그인 상태 복원
+    // Restore login state on page refresh
     initializeAuth() {
       if (process.client) {
-        const isAuthenticated = localStorage.getItem('isAuthenticated');
-        const user = localStorage.getItem('user');
+        const userStr = localStorage.getItem('user');
+        const isAuthStr = localStorage.getItem('isAuthenticated');
         
-        if (isAuthenticated && user) {
+        if (userStr && isAuthStr === 'true') {
+          this.user = JSON.parse(userStr);
           this.isAuthenticated = true;
-          this.user = JSON.parse(user);
         }
       }
     }

@@ -1,116 +1,113 @@
 <template>
-  <AppCard>
-    <template #header>
-      <div class="text-h5 text-weight-medium">{{ course?.title }}</div>
-      <div class="flex q-gutter-x-sm items-center q-mt-sm text-grey-8">
-        <span class="flex items-center">
-          <q-icon name="star" size="16px" color="orange" />
-          <span>{{ course?.rating }}</span>
-        </span>
-        <span> {{ course?.reviewCount }} 개의 수강평 </span>
-        <span>&middot;</span>
-        <span>{{ course?.studentCount }} 명의 수강생</span>
-        <q-space />
-        <a class="text-bold" :href="course?.reviewsUrl" target="_blank">
-          수강평 보기
-        </a>
+  <q-page padding>
+    <div v-if="course" class="q-my-xl">
+      <div class="row q-col-gutter-lg">
+        <div class="col-12 col-md-8">
+          <VideoPlayer :src="course.video" />
+          <div class="q-mt-md">
+            <span> {{ course?.reviewCount }} reviews </span>
+            <span class="q-mx-md">|</span>
+            <span>{{ course?.studentCount }} students</span>
+            <q-btn
+              flat
+              color="primary"
+              label="View Reviews"
+              :href="course.reviewsUrl"
+              target="_blank"
+            />
+          </div>
+        </div>
+        <div class="col-12 col-md-4">
+          <q-card>
+            <q-card-section>
+              <div class="text-h6">{{ course.title }}</div>
+              <p class="q-mt-sm">{{ course.subtitle }}</p>
+              <div class="q-mt-md">
+                <q-btn
+                  color="primary"
+                  label="Take Course on Inflearn"
+                  :href="course.inflearnUrl"
+                  target="_blank"
+                  class="q-mb-sm full-width"
+                />
+                <q-btn
+                  color="secondary"
+                  label="Take Course on Gymcoding Club"
+                  :href="course.gymcodingUrl"
+                  target="_blank"
+                  class="q-mb-sm full-width"
+                />
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
       </div>
-    </template>
-    <div class="q-mb-md">
-      <VideoPlayer :src="course?.video" />
+      <div class="q-mt-lg">
+        <q-card>
+          <q-card-section>
+            <div class="text-h6">Course Progress</div>
+            <q-btn
+              color="success"
+              label="Mark as Completed"
+              class="q-mt-sm"
+            />
+          </q-card-section>
+        </q-card>
+      </div>
+      <div class="q-mt-lg">
+        <q-card>
+          <q-card-section>
+            <div class="text-h6">Notes</div>
+            <q-input
+              v-model="notes"
+              type="textarea"
+              placeholder="Write your notes here."
+              class="q-mt-sm"
+            />
+          </q-card-section>
+        </q-card>
+      </div>
+      <div class="q-mt-lg">
+        <q-card>
+          <q-card-section>
+            <div class="text-h6">Navigation</div>
+            <div class="row q-col-gutter-sm">
+              <div class="col">
+                <q-btn
+                  color="primary"
+                  label="Previous Course"
+                  class="full-width"
+                />
+              </div>
+              <div class="col">
+                <q-btn
+                  color="secondary"
+                  label="Add Query"
+                  class="full-width"
+                />
+              </div>
+              <div class="col">
+                <q-btn
+                  color="primary"
+                  label="Next Course"
+                  class="full-width"
+                />
+              </div>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
     </div>
-    <div class="row q-col-gutter-md">
-      <div class="col-6">
-        <q-btn
-          label="인프런에서 수강하기"
-          unelevated
-          class="full-width"
-          color="primary"
-          :href="course?.inflearnUrl"
-          target="_blank"
-        />
-      </div>
-      <div class="col-6">
-        <q-btn
-          label="짐코딩 클럽에서 수강하기"
-          unelevated
-          class="full-width"
-          color="red"
-          :href="course?.gymcodingUrl"
-          target="_blank"
-        />
-      </div>
-    </div>
-    <p class="q-mt-lg text-grey-8">{{ course?.content }}</p>
-    <q-separator class="q-mb-lg" />
-    <q-form class="q-gutter-y-md">
-      <q-btn
-        label="수강완료"
-        class="full-width"
-        color="green"
-        unelevated
-        :outline="completed ? false : true"
-        :icon="completed ? 'check' : undefined"
-        @click="completed = !completed"
-      />
-      <ClientOnly>
-        <q-input
-          v-model="memo"
-          type="textarea"
-          outlined
-          dense
-          placeholder="메모를 작성해주세요."
-          rows="3"
-          autogrow
-        />
-      </ClientOnly>
-    </q-form>
-    <template #footer>
-      <q-btn
-        v-if="prevCourse"
-        label="이전 강의"
-        color="primary"
-        unelevated
-        @click="movePage(prevCourse.path)"
-      />
-      <ClientOnly>
-        <q-btn
-          label="쿼리 추가"
-          color="dark"
-          unelevated
-          :to="{ path: $route.path, query: { timestamp: Date.now() } }"
-        />
-      </ClientOnly>
-      <q-space />
-      <q-btn
-        v-if="nextCourse"
-        label="다음 강의"
-        color="primary"
-        unelevated
-        @click="movePage(nextCourse.path)"
-      />
-    </template>
-  </AppCard>
+  </q-page>
 </template>
+
 <script setup lang="ts">
-const route = useRoute();
-const courseSlug = route.params.courseSlug as string;
-const { course, prevCourse, nextCourse } = useCourse(courseSlug);
+const route = useRoute()
+const courseSlug = route.params.courseSlug as string
+const { course, prevCourse, nextCourse } = useCourse(courseSlug)
+const notes = ref('')
 
 definePageMeta({
-  key: (route) => route.fullPath,
-  title: 'My Home Page',
-  pageType: '',
-  keepalive: true,
-});
-
-const memo = ref('');
-const completed = ref(false);
-
-const movePage = async (path: string) => {
-  await navigateTo(path);
-};
-
-console.log('route.meta.title : ', route.meta);
+  middleware: ['auth']
+})
 </script>
-<style scoped></style>

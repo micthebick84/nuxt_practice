@@ -1,34 +1,31 @@
 <template>
-  <q-page padding>
-    <div class="q-my-xl tex-center">
-      <div class="text-h4">All Courses</div>
-      <p class="q-mt-sm text-grey-8">웹 개발 입문부터 실전까지 학습해보세요.</p>
-    </div>
-    <div class="row q-col-gutter-lg">
-      <div
-        v-for="{ courseSlug, title, subtitle, thumbnail, path } in courses"
-        :key="courseSlug"
-        class="col-12 col-md-4 col-sm-6"
-      >
-        <NuxtLink v-slot="{ navigate }" :to="path">
-          <CourseCard
-            :title="title"
-            :sub-title="subtitle"
-            :thumbnail="thumbnail"
-            @click="navigate"
-          />
-        </NuxtLink>
-      </div>
+  <q-page padding class="q-my-xl text-center">
+    <div class="text-h4">Welcome to Vue & Nuxt Mastery Class</div>
+    <p class="q-mt-sm text-grey-8">Learn web development from basics to practice.</p>
+    <div class="q-mt-lg">
+      <q-card class="q-pa-md">
+        <q-card-section>
+          <div class="text-h6">Featured Courses</div>
+          <p class="q-mt-sm">
+            Explore our comprehensive collection of web development courses designed to take you from beginner to expert.
+          </p>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn color="primary" label="View Courses" to="/course" />
+        </q-card-actions>
+      </q-card>
     </div>
   </q-page>
 </template>
+
 <script lang="ts">
 console.log('index.vue');
 </script>
+
 <script setup lang="ts">
 const { courses } = useCourses();
 
-// 페이지 메타데이터 설정 - 인증이 필요한 페이지로 설정
+// Page metadata configuration - set as page requiring authentication
 definePageMeta({
   middleware: ['auth']
 });
