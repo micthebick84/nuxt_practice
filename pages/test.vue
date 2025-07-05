@@ -1,27 +1,188 @@
 <template>
-  <q-page padding>
-    <div class="q-my-xl text-center">
-      <div class="text-h4">{{ $t('test') }}</div>
-      <p class="q-mt-sm text-grey-8">
-        This is a test page for development purposes.
-      </p>
-      <div class="q-mt-lg">
-        <q-card class="q-pa-md">
-          <q-card-section>
-            <div class="text-h6">Test Content</div>
-            <p class="q-mt-sm">
-              Welcome to the test page! This page is used for testing various features and components.
-            </p>
-          </q-card-section>
-          <q-card-actions align="right">
-            <q-btn color="primary" label="Test Button" />
-          </q-card-actions>
-        </q-card>
+  <q-page padding class="test-page">
+    <div class="row">
+      <!-- 좌측 20%: jqxTreeGrid -->
+      <div class="col-12 col-md-3 tree-grid-container">
+        <client-only>
+          <div ref="treeGridContainer" class="tree-grid-wrapper"></div>
+        </client-only>
+      </div>
+      <!-- 우측 80%: 기존 내용 -->
+      <div class="col">
+        <div class="q-my-xl text-center">
+          <div class="text-h4">{{ $t('test') }}</div>
+          <p class="q-mt-sm text-grey-8">
+            This is a test page for development purposes.
+          </p>
+          <div class="q-mt-lg">
+            <q-card class="q-pa-md">
+              <q-card-section>
+                <div class="text-h6">Test Content</div>
+                <p class="q-mt-sm">
+                  Welcome to the test page! This page is used for testing various features and components.
+                </p>
+              </q-card-section>
+              <q-card-actions align="right">
+                <q-btn color="primary" label="Test Button" />
+              </q-card-actions>
+            </q-card>
+          </div>
+        </div>
       </div>
     </div>
   </q-page>
 </template>
 
 <script setup lang="ts">
-// Test page component
-</script> 
+import { onMounted, ref } from 'vue'
+
+const treeGridContainer = ref<HTMLDivElement | null>(null)
+
+onMounted(async () => {
+  // CDN에서 jqwidgets 로드
+  const loadScript = (src: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = src
+      script.onload = () => resolve()
+      script.onerror = () => reject(new Error(`Failed to load ${src}`))
+      document.head.appendChild(script)
+    })
+  }
+
+  const loadCSS = (href: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = href
+      link.onload = () => resolve()
+      link.onerror = () => reject(new Error(`Failed to load ${href}`))
+      document.head.appendChild(link)
+    })
+  }
+
+  try {
+    // jqwidgets CSS 로드
+    await loadCSS('https://jqwidgets.com/public/jqwidgets/styles/jqx.base.css')
+    await loadCSS('https://jqwidgets.com/public/jqwidgets/styles/jqx.material.css')
+    
+    // jqwidgets CDN 스크립트들 로드
+    await loadScript('https://jqwidgets.com/public/jqwidgets/jqx-all.js')
+    
+    // DOM이 완전히 준비될 때까지 대기
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    // 샘플 그룹 데이터
+    const source = {
+      dataType: 'json',
+      dataFields: [
+        { name: 'id', type: 'number' },
+        { name: 'name', type: 'string' },
+        { name: 'type', type: 'string' },
+        { name: 'parentid', type: 'number' }
+      ],
+      hierarchy: {
+        keyDataField: { name: 'id' },
+        parentDataField: { name: 'parentid' }
+      },
+      id: 'id',
+      localData: [
+        { id: 1, name: '본사', type: '부서', parentid: null },
+        { id: 2, name: '개발팀', type: '팀', parentid: 1 },
+        { id: 3, name: '디자인팀', type: '팀', parentid: 1 },
+        { id: 4, name: '홍길동', type: '사원', parentid: 2 },
+        { id: 5, name: '김철수', type: '사원', parentid: 2 },
+        { id: 6, name: '이영희', type: '사원', parentid: 3 }
+      ]
+    }
+
+    // jqxTreeGrid 생성
+    // @ts-ignore
+    const dataAdapter = new window.jqx.dataAdapter(source)
+    // @ts-ignore
+    window.$(treeGridContainer.value).jqxTreeGrid({
+      width: '100%',
+      height: 400,
+      source: dataAdapter,
+      theme: 'material',
+      columns: [
+        { text: '이름', dataField: 'name', width: '60%' },
+        { text: '구분', dataField: 'type', width: '40%' }
+      ]
+    })
+  } catch (error) {
+    console.error('Failed to load jqwidgets:', error)
+  }
+})
+</script>
+
+<style scoped>
+/* test 페이지에서 q-page-container의 maxWidth 제한 완전 해제 */
+:deep(.q-page-container) {
+  max-width: none !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+.test-page {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.row {
+  min-height: 500px;
+  justify-content: flex-start;
+  margin: 0;
+  width: 100%;
+}
+
+.tree-grid-container {
+  min-width: 250px;
+  max-width: 350px;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  background: white;
+  margin-left: 0;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+.tree-grid-wrapper {
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* jqxTreeGrid 스타일 오버라이드 */
+:deep(.jqx-tree-grid) {
+  border: 1px solid #ccc !important;
+  font-family: Arial, sans-serif !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+:deep(.jqx-tree-grid-header) {
+  background-color: #f5f5f5 !important;
+  border-bottom: 1px solid #ddd !important;
+}
+
+:deep(.jqx-tree-grid-row) {
+  border-bottom: 1px solid #eee !important;
+}
+
+:deep(.jqx-tree-grid-cell) {
+  padding: 8px !important;
+}
+
+/* 전체 페이지 컨테이너 스타일 */
+:deep(.q-layout) {
+  width: 100% !important;
+}
+
+:deep(.q-page) {
+  width: 100% !important;
+}
+</style> 

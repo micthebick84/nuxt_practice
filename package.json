@@ -35,6 +35,7 @@
     "@heroicons/vue": "^2.2.0",
     "@pinia/nuxt": "^0.11.1",
     "@quasar/extras": "^1.16.17",
+    "jqwidgets-scripts": "^23.1.0",
     "pinia": "^3.0.3",
     "quasar": "^2.17.7"
   }
