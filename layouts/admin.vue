@@ -14,7 +14,6 @@
               @click="navigate()"
             />
           </NuxtLink>
-
           <q-separator dark vertical />
           <NuxtLink v-slot="{ navigate }" custom to="/admin/dynamic-layout">
             <q-btn
@@ -38,7 +37,6 @@
     </q-page-container>
   </q-layout>
 </template>
-
 <script setup lang="ts">
 const pageContainerStyle = computed(() => ({
   maxWidth: '1080px',
