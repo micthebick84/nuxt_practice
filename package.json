@@ -33,6 +33,7 @@
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
+    "@nuxt-alt/proxy": "^2.5.8",
     "@pinia/nuxt": "^0.11.1",
     "@quasar/extras": "^1.16.17",
     "jqwidgets-scripts": "^23.1.0",

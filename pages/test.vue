@@ -23,7 +23,7 @@
                 </p>
               </q-card-section>
               <q-card-actions align="right">
-                <q-btn color="primary" label="Test Button" />
+                <q-btn color="primary" label="Test Button" @click="fetchUsers" />
               </q-card-actions>
             </q-card>
           </div>
@@ -39,6 +39,24 @@ import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 const treeGridContainer = ref<HTMLDivElement | null>(null)
+
+const fetchUsers = async () => {
+  try {
+    const config = useRuntimeConfig();
+    const res = await fetch(`${config.public.apiBaseUrl}/api/users?page=1&size=10`);
+    const text = await res.text();
+    console.log('응답:', text);
+    // JSON 파싱 시도
+    try {
+      const data = JSON.parse(text);
+      console.log('사용자 리스트:', data);
+    } catch (e) {
+      console.error('JSON 파싱 실패:', e);
+    }
+  } catch (err) {
+    console.error('사용자 조회 실패:', err);
+  }
+}
 
 onMounted(async () => {
   // Load jqwidgets from CDN

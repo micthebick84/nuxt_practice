@@ -10,6 +10,13 @@ export default defineNuxtConfig({
     'nuxt-quasar-ui',
     '@pinia/nuxt',
   ],
+  proxy: {
+    '/api': {
+      target: 'http://localhost:8080', // 8080 포트로 프록시
+      changeOrigin: true,
+      pathRewrite: { '^/api': '/api' }, // 필요시 경로 재작성
+    },
+  },
   quasar: {
     /* */
   },
@@ -26,4 +33,18 @@ export default defineNuxtConfig({
     ],
   },
   ssr: true,
+  nitro: {
+    devProxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        prependPath: true,
+      }
+    }
+  },
+  runtimeConfig: {
+    public: {
+      apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:8080'
+    }
+  }
 });
