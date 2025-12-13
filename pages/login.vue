@@ -1,5 +1,7 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div
+    class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8"
+  >
     <div class="max-w-md w-full space-y-8">
       <div>
         <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
@@ -7,25 +9,36 @@
         </h2>
         <p class="mt-2 text-center text-sm text-gray-600">
           or
-          <NuxtLink to="/signup" class="font-medium text-indigo-600 hover:text-indigo-500">
+          <NuxtLink
+            to="/signup"
+            class="font-medium text-indigo-600 hover:text-indigo-500"
+          >
             Sign up
           </NuxtLink>
         </p>
       </div>
+
+      <div
+        v-if="errorMessage"
+        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
+      >
+        {{ errorMessage }}
+      </div>
+
       <form class="mt-8 space-y-6" @submit.prevent="login">
         <input type="hidden" name="remember" value="true" />
         <div class="rounded-md shadow-sm -space-y-px">
           <div>
-            <label for="email-address" class="sr-only">Email address</label>
+            <label for="user-id" class="sr-only">User ID</label>
             <input
-              id="email-address"
-              v-model="form.email"
-              name="email"
-              type="email"
-              autocomplete="email"
+              id="user-id"
+              v-model="form.userId"
+              name="userId"
+              type="text"
+              autocomplete="username"
               required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              placeholder="Email address"
+              placeholder="User ID"
             />
           </div>
           <div>
@@ -67,9 +80,11 @@
         <div>
           <button
             type="submit"
-            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            :disabled="authStore.isLoading"
+            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
           >
-            Login
+            <span v-if="authStore.isLoading">Logging in...</span>
+            <span v-else>Login</span>
           </button>
         </div>
       </form>
@@ -78,60 +93,64 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
-import { useAuthStore } from '~/stores/auth'
+import { reactive, ref } from 'vue';
+import { useAuthStore } from '~/stores/auth';
 
 // Types
 type LoginForm = {
-  email: string
-  password: string
-  rememberMe: boolean
-  redirect: string
-}
+  userId: string;
+  password: string;
+  rememberMe: boolean;
+  redirect: string;
+};
 
 // State
 const form = reactive<LoginForm>({
-  email: '',
+  userId: '',
   password: '',
   rememberMe: false,
-  redirect: ''
-})
+  redirect: '',
+});
 
-const authStore = useAuthStore()
-const route = useRoute()
-const router = useRouter()
+const errorMessage = ref('');
+const authStore = useAuthStore();
+const route = useRoute();
 
 // Methods
 const login = async () => {
+  errorMessage.value = '';
   try {
-    // Replace with actual authentication logic
-    await authStore.login(form.email, form.password);
-    
+    await authStore.login(form.userId, form.password);
+
     // Redirect to previous page or home after successful login
     const redirectTo = form.redirect || '/';
     await navigateTo(redirectTo, { external: false });
-  } catch (error) {
-    console.error('Login failed:', error)
-    // Add error handling logic
+  } catch (error: any) {
+    console.error('Login failed:', error);
+    if (error.data?.statusMessage) {
+      errorMessage.value = error.data.statusMessage;
+    } else {
+      errorMessage.value = 'Login failed. Please check your credentials.';
+    }
   }
-}
+};
 
 // Check for successful registration
 onMounted(() => {
   if (route.query.registered === 'true') {
     alert('Registration completed successfully. Please login.');
   }
-  
+
   // Set redirect path after login (get from query parameters)
   if (route.query.redirect) {
-    form.redirect = Array.isArray(route.query.redirect) 
+    form.redirect = Array.isArray(route.query.redirect)
       ? route.query.redirect[0] || ''
       : route.query.redirect || '';
   }
-})
+});
 
 // Layout
 definePageMeta({
-  layout: 'empty'
-})
+  layout: 'empty',
+});
 </script>

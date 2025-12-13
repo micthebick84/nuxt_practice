@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "mcp__mariadb__list_databases",
+      "mcp__mariadb__get_table_schema_with_relations",
+      "mcp__postgresql-mcp__pg_execute_sql",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)",
+      "Bash(dir /s /b \"C:\\Users\\micth\\IdeaProjects\\nuxt_practice\\.claude\")",
+      "Bash(cat:*)",
+      "Bash(cmd /c \"taskkill /PID 15924 /F\")",
+      "Bash(powershell -Command \"Stop-Process -Id 15924 -Force\")",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__fill_form",
+      "mcp__chrome-devtools__click",
+      "mcp__chrome-devtools__list_network_requests",
+      "mcp__chrome-devtools__get_network_request",
+      "mcp__postgresql-mcp__pg_manage_schema",
+      "mcp__chrome-devtools__list_console_messages",
+      "mcp__chrome-devtools__fill",
+      "mcp__chrome-devtools__wait_for",
+      "mcp__chrome-devtools__handle_dialog",
+      "Bash(cmd /c \"del C:\\Users\\micth\\IdeaProjects\\nuxt_practice\\middleware\\auth.ts\")",
+      "mcp__chrome-devtools__evaluate_script"
+    ]
+  }
+}

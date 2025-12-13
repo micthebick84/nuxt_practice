@@ -11,10 +11,10 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
   ],
   proxy: {
-    '/api': {
+    '/api/proxy': {
       target: 'http://localhost:8080', // 8080 포트로 프록시
       changeOrigin: true,
-      pathRewrite: { '^/api': '/api' }, // 필요시 경로 재작성
+      pathRewrite: { '^/api/proxy': '/api' }, // 필요시 경로 재작성
     },
   },
   quasar: {
@@ -35,7 +35,7 @@ export default defineNuxtConfig({
   ssr: true,
   nitro: {
     devProxy: {
-      '/api': {
+      '/api/proxy': {
         target: 'http://localhost:8080',
         changeOrigin: true,
         prependPath: true,

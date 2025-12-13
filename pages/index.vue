@@ -23,8 +23,5 @@ console.log('index.vue');
 </script>
 
 <script setup lang="ts">
-// Page metadata configuration - set as page requiring authentication
-definePageMeta({
-  middleware: ['auth']
-});
+// Page metadata - no longer needs middleware since auth is global
 </script>
