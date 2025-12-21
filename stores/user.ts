@@ -57,7 +57,7 @@ export const useUserStore = defineStore('user', {
     async changePassword(userId: string, data: PasswordChangeRequest) {
       this.loading = true;
       try {
-        return await $fetch(`/api/users/${userId}/password`, {
+        return await $fetch<{ success: boolean; message: string }>(`/api/users/${userId}/password` as string, {
           method: 'PUT',
           body: data,
         });
@@ -80,7 +80,7 @@ export const useUserStore = defineStore('user', {
     },
 
     async deleteAccount(userId: string, password: string) {
-      return await $fetch(`/api/users/${userId}`, {
+      return await $fetch<{ success: boolean; message: string }>(`/api/users/${userId}` as string, {
         method: 'DELETE',
         body: { password },
       });
