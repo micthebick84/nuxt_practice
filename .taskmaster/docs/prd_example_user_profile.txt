@@ -1,0 +1,534 @@
+<context>
+# Overview
+User Profile Management System for Nuxt 3 Application
+
+This PRD describes the implementation of a comprehensive user profile management system that allows authenticated users to view and edit their personal information, preferences, and account settings. The feature aims to improve user engagement and provide a personalized experience.
+
+Target Users: All authenticated users of the application
+Problem Solved: Users currently have no way to view or manage their profile information after signing up
+Value: Enables users to maintain accurate personal information and customize their experience
+
+# Core Features
+
+## 1. Profile View Page
+- Display user's current profile information (name, email, join date, preferences)
+- Show profile avatar/photo
+- Display account statistics (last login, account age, activity summary)
+- Responsive design using Quasar components
+- Support for English and Korean languages via i18n
+
+## 2. Profile Edit Functionality
+- Editable fields: name, bio, phone number, preferred language
+- Profile photo upload with preview
+- Real-time validation of input fields
+- Save changes with API integration to backend
+- Success/error notifications using Quasar notify
+
+## 3. Password Change Feature
+- Secure password change form (current password, new password, confirm password)
+- Password strength indicator
+- Validation rules (minimum length, complexity requirements)
+- Integration with bcryptjs for secure password hashing
+- Email notification on password change
+
+## 4. Account Settings
+- Language preference (English/Korean)
+- Email notification preferences
+- Privacy settings
+- Account deletion option (with confirmation dialog)
+
+# User Experience
+
+## User Personas
+1. **Active User**: Frequently updates profile, uploads new photos, changes settings
+2. **Basic User**: Rarely visits profile, only updates when necessary
+3. **Privacy-Conscious User**: Focuses on privacy settings and minimal information sharing
+
+## Key User Flows
+
+### Flow 1: View Profile
+1. User clicks "Profile" in navigation header
+2. System loads profile data from PostgreSQL via API
+3. Profile page displays with all user information
+4. User can navigate to edit mode or return to app
+
+### Flow 2: Edit Profile
+1. User clicks "Edit Profile" button
+2. Form loads with current values pre-filled
+3. User modifies fields (validated in real-time)
+4. User clicks "Save Changes"
+5. System validates and sends PUT request to backend
+6. Success notification appears, profile view updates
+7. Pinia store updates with new user data
+
+### Flow 3: Change Password
+1. User navigates to "Security" tab
+2. User fills in password change form
+3. System validates current password
+4. New password is hashed and updated in database
+5. User session remains active, confirmation shown
+
+## UI/UX Considerations
+- Use Quasar's QCard for profile sections
+- Implement QAvatar for profile photos
+- Use QTabs for organizing profile sections (General, Security, Settings)
+- Consistent with existing layout design (default.vue)
+- Loading states with QSpinner
+- Form validation with clear error messages
+- Confirmation dialogs for destructive actions (account deletion)
+</context>
+
+<PRD>
+# Technical Architecture
+
+## Frontend Components
+- `/pages/profile/index.vue` - Main profile view page
+- `/pages/profile/edit.vue` - Profile edit page
+- `/components/profile/ProfileCard.vue` - Reusable profile display component
+- `/components/profile/ProfileForm.vue` - Editable profile form component
+- `/components/profile/PasswordChangeForm.vue` - Password change component
+- `/components/profile/AvatarUpload.vue` - Avatar upload component
+
+## State Management (Pinia)
+- `stores/user.ts` - User profile state store
+  - State: `userProfile`, `loading`, `error`
+  - Actions: `fetchProfile()`, `updateProfile()`, `changePassword()`, `uploadAvatar()`, `deleteAccount()`
+  - Getters: `fullName`, `profileCompleteness`, `hasAvatar`
+
+## API Endpoints (Backend at localhost:8080)
+- GET `/api/users/:id/profile` - Fetch user profile
+- PUT `/api/users/:id/profile` - Update profile information
+- POST `/api/users/:id/avatar` - Upload profile photo
+- PUT `/api/users/:id/password` - Change password
+- DELETE `/api/users/:id` - Delete account
+
+## Database Schema (PostgreSQL)
+```sql
+CREATE TABLE user_profiles (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  bio TEXT,
+  phone VARCHAR(20),
+  avatar_url VARCHAR(500),
+  preferred_language VARCHAR(10) DEFAULT 'en',
+  email_notifications BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+## File Upload
+- Avatar images stored in `/public/uploads/avatars/`
+- Maximum file size: 5MB
+- Allowed formats: JPG, PNG, WebP
+- Image processing: resize to 300x300px, optimize quality
+
+## Security
+- All endpoints require authentication (auth middleware)
+- Password changes require current password verification
+- Avatar uploads validated for file type and size
+- Account deletion requires password confirmation
+
+# Development Roadmap
+
+## Phase 1: MVP - Basic Profile View and Edit
+**Scope**: Minimum viable profile system
+- Create profile page layout with Quasar components
+- Display user basic information (name, email, join date)
+- Implement simple profile edit form
+- Set up Pinia store for user profile state
+- Create backend API endpoints for GET/PUT profile
+- Database migration for user_profiles table
+- Integration with existing auth system
+
+**Deliverables**:
+- Users can view their profile
+- Users can edit name and bio
+- Changes persist to database
+
+## Phase 2: Password Management
+**Scope**: Secure password change functionality
+- Create password change form component
+- Implement password strength indicator
+- Add backend endpoint for password updates
+- Integrate bcryptjs for password hashing
+- Add email notification system
+- i18n support for all password-related messages
+
+**Deliverables**:
+- Users can securely change passwords
+- Password validation and strength checking
+- Email confirmations sent
+
+## Phase 3: Avatar Upload
+**Scope**: Profile photo upload and management
+- Create avatar upload component with preview
+- Implement file upload API endpoint
+- Set up file storage system
+- Add image processing (resize, optimize)
+- Implement avatar display in header and profile
+- Default avatar for users without photos
+
+**Deliverables**:
+- Users can upload and change profile photos
+- Avatars displayed throughout the app
+- Image files properly stored and optimized
+
+## Phase 4: Advanced Settings
+**Scope**: Comprehensive account settings and preferences
+- Create settings tabs interface (QTabs)
+- Add language preference setting
+- Implement email notification preferences
+- Add privacy settings options
+- Create account deletion workflow
+- Add confirmation dialogs for destructive actions
+
+**Deliverables**:
+- Complete settings management
+- User preferences synchronized across app
+- Account deletion functionality
+
+## Phase 5: Enhancements
+**Scope**: Polish and additional features
+- Profile completeness indicator
+- Activity timeline/history
+- Social links management
+- Two-factor authentication setup
+- Export user data functionality (GDPR compliance)
+- Profile analytics (views, interactions)
+
+**Deliverables**:
+- Enhanced user experience
+- Additional security features
+- Compliance with data protection regulations
+
+# Logical Dependency Chain
+
+## Foundation Layer (Must Build First)
+1. **Database Schema** - Create user_profiles table and migrations
+   - Required for all subsequent features
+   - Includes basic columns: bio, phone, avatar_url, preferences
+
+2. **Pinia Store Setup** - Establish user profile state management
+   - Central state management for profile data
+   - Actions and getters used by all components
+   - Must be in place before building UI
+
+3. **Backend API Endpoints** - Basic CRUD operations
+   - GET profile endpoint for data fetching
+   - PUT profile endpoint for updates
+   - Authentication middleware integration
+   - Required before frontend can interact with data
+
+## Core UI Layer (Quick Visibility)
+4. **Profile View Page** - `/pages/profile/index.vue`
+   - Visible, working frontend component users can see immediately
+   - Displays basic user information
+   - Uses Quasar components for consistent design
+   - Tests API integration and data flow
+
+5. **Profile Edit Form** - Basic editable fields
+   - Name and bio editing
+   - Form validation
+   - Save/cancel functionality
+   - Demonstrates complete CRUD cycle
+
+## Iterative Enhancement Layers
+6. **Password Management** - Standalone security feature
+   - Can be built independently of other profile features
+   - Adds significant user value
+   - Tests secure data handling patterns
+
+7. **Avatar Upload** - Media handling capability
+   - Builds on existing profile foundation
+   - Introduces file upload patterns
+   - Enhances visual appeal
+
+8. **Settings & Preferences** - Extended functionality
+   - Leverages existing form patterns
+   - Adds customization options
+   - Can be developed incrementally (one setting type at a time)
+
+9. **Polish & Advanced Features** - Final layer
+   - Profile completeness indicator
+   - Activity timeline
+   - Two-factor authentication
+   - Each can be scoped as individual atomic features
+
+## Atomic Feature Scoping Strategy
+- Each phase can be broken into tasks that take ~2-4 hours
+- Each task produces a working, testable increment
+- Tasks are sequenced to minimize blocking dependencies
+- Early tasks prioritize visible frontend progress
+- Backend tasks paired with frontend implementation in same phase
+
+# Risks and Mitigations
+
+## Technical Challenges
+
+### Risk: File Upload Complexity
+- **Challenge**: Handling large files, validation, storage, and security
+- **Mitigation**:
+  - Use proven libraries (Multer for Node.js)
+  - Implement strict file size limits (5MB)
+  - Validate file types on both client and server
+  - Use cloud storage (future) or local storage with cleanup job
+
+### Risk: Real-time Form Validation Performance
+- **Challenge**: Complex validation rules may slow down user input
+- **Mitigation**:
+  - Debounce validation checks
+  - Use client-side validation for instant feedback
+  - Server-side validation as final gate
+  - Optimize Quasar form validation rules
+
+### Risk: Concurrent Profile Updates
+- **Challenge**: Multiple browser tabs or devices editing same profile
+- **Mitigation**:
+  - Implement optimistic locking with version numbers
+  - Show conflict resolution UI
+  - Use timestamps to detect stale data
+
+## MVP Definition
+
+### Core MVP Requirements
+1. View profile with basic information
+2. Edit name and bio
+3. Password change functionality
+4. Data persists to PostgreSQL
+5. Works on mobile and desktop
+6. English and Korean language support
+
+### Out of Scope for MVP
+- Avatar uploads (Phase 3)
+- Advanced settings (Phase 4)
+- Social features
+- Analytics
+- Two-factor authentication
+
+### MVP Success Criteria
+- User can complete profile view/edit cycle in < 30 seconds
+- 100% of form validations working correctly
+- Zero data loss on save operations
+- Responsive on mobile devices (tested on iOS/Android)
+
+## Resource Constraints
+
+### Development Time
+- **Constraint**: Limited development time for full feature set
+- **Mitigation**: Phased approach allows shipping MVP quickly, then iterating
+
+### Backend Infrastructure
+- **Constraint**: Need backend API endpoints (currently may not exist)
+- **Mitigation**:
+  - Define API contract first
+  - Can stub endpoints for frontend development
+  - Coordinate with backend team on priority endpoints
+
+### Testing Coverage
+- **Constraint**: Comprehensive testing takes time
+- **Mitigation**:
+  - Focus on critical paths for MVP (auth, data integrity)
+  - Add tests incrementally with each phase
+  - Manual testing checklist for each feature
+
+# Appendix
+
+## Research Findings
+
+### Industry Best Practices
+- Most applications allow in-place editing (edit mode toggle)
+- Auto-save vs explicit save: explicit save preferred for user control
+- Profile completeness indicators increase engagement by 40%
+- Avatar presence increases user trust and recognition
+
+### Competitive Analysis
+- **LinkedIn**: Comprehensive profile with sections, completeness indicator
+- **GitHub**: Simple profile with markdown bio support
+- **Twitter**: Inline editing, real-time preview, character limits
+
+### User Research Insights
+- Users expect profile changes to reflect immediately
+- Privacy concerns about what information is visible to others
+- Mobile users prefer simple, single-column layouts
+- Language switcher should be accessible from profile settings
+
+## Technical Specifications
+
+### Form Validation Rules
+```javascript
+// Name: 2-50 characters, letters and spaces only
+const nameRules = [
+  val => !!val || 'Name is required',
+  val => val.length >= 2 || 'Name must be at least 2 characters',
+  val => val.length <= 50 || 'Name must be less than 50 characters',
+  val => /^[a-zA-Z\s]+$/.test(val) || 'Name can only contain letters and spaces'
+]
+
+// Bio: Optional, max 500 characters
+const bioRules = [
+  val => !val || val.length <= 500 || 'Bio must be less than 500 characters'
+]
+
+// Phone: Optional, valid format
+const phoneRules = [
+  val => !val || /^\+?[\d\s-()]+$/.test(val) || 'Invalid phone number format'
+]
+
+// Password: 8-128 characters, must contain uppercase, lowercase, number
+const passwordRules = [
+  val => !!val || 'Password is required',
+  val => val.length >= 8 || 'Password must be at least 8 characters',
+  val => val.length <= 128 || 'Password must be less than 128 characters',
+  val => /[A-Z]/.test(val) || 'Password must contain an uppercase letter',
+  val => /[a-z]/.test(val) || 'Password must contain a lowercase letter',
+  val => /\d/.test(val) || 'Password must contain a number'
+]
+```
+
+### i18n Translation Keys
+```javascript
+{
+  en: {
+    profile: {
+      title: 'My Profile',
+      edit: 'Edit Profile',
+      save: 'Save Changes',
+      cancel: 'Cancel',
+      name: 'Name',
+      bio: 'Bio',
+      phone: 'Phone Number',
+      email: 'Email',
+      joinDate: 'Member Since',
+      changePassword: 'Change Password',
+      currentPassword: 'Current Password',
+      newPassword: 'New Password',
+      confirmPassword: 'Confirm Password',
+      deleteAccount: 'Delete Account',
+      deleteConfirm: 'Are you sure? This action cannot be undone.',
+      uploadAvatar: 'Upload Photo',
+      removeAvatar: 'Remove Photo',
+      settings: {
+        language: 'Language',
+        notifications: 'Email Notifications',
+        privacy: 'Privacy Settings'
+      },
+      messages: {
+        updateSuccess: 'Profile updated successfully',
+        updateError: 'Failed to update profile',
+        passwordChanged: 'Password changed successfully',
+        invalidPassword: 'Current password is incorrect'
+      }
+    }
+  },
+  ko: {
+    profile: {
+      title: '내 프로필',
+      edit: '프로필 수정',
+      save: '변경사항 저장',
+      cancel: '취소',
+      name: '이름',
+      bio: '소개',
+      phone: '전화번호',
+      email: '이메일',
+      joinDate: '가입일',
+      changePassword: '비밀번호 변경',
+      currentPassword: '현재 비밀번호',
+      newPassword: '새 비밀번호',
+      confirmPassword: '비밀번호 확인',
+      deleteAccount: '계정 삭제',
+      deleteConfirm: '정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+      uploadAvatar: '사진 업로드',
+      removeAvatar: '사진 제거',
+      settings: {
+        language: '언어',
+        notifications: '이메일 알림',
+        privacy: '개인정보 설정'
+      },
+      messages: {
+        updateSuccess: '프로필이 성공적으로 업데이트되었습니다',
+        updateError: '프로필 업데이트에 실패했습니다',
+        passwordChanged: '비밀번호가 성공적으로 변경되었습니다',
+        invalidPassword: '현재 비밀번호가 올바르지 않습니다'
+      }
+    }
+  }
+}
+```
+
+### API Response Examples
+```typescript
+// GET /api/users/:id/profile - Success Response
+{
+  "success": true,
+  "data": {
+    "id": 123,
+    "userId": 456,
+    "name": "John Doe",
+    "email": "john@example.com",
+    "bio": "Software developer passionate about Nuxt.js",
+    "phone": "+82-10-1234-5678",
+    "avatarUrl": "/uploads/avatars/456_profile.jpg",
+    "preferredLanguage": "en",
+    "emailNotifications": true,
+    "joinDate": "2024-01-15T08:30:00Z",
+    "lastLogin": "2024-12-20T14:22:00Z",
+    "createdAt": "2024-01-15T08:30:00Z",
+    "updatedAt": "2024-12-18T10:15:00Z"
+  }
+}
+
+// PUT /api/users/:id/profile - Request Body
+{
+  "name": "John Doe",
+  "bio": "Updated bio text",
+  "phone": "+82-10-1234-5678",
+  "preferredLanguage": "ko",
+  "emailNotifications": false
+}
+
+// Error Response
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Name must be at least 2 characters",
+    "field": "name"
+  }
+}
+```
+
+### Component Structure
+```
+pages/
+  profile/
+    index.vue          # Main profile view page
+    edit.vue           # Profile edit page
+    settings.vue       # Settings page
+
+components/
+  profile/
+    ProfileCard.vue           # Display profile information
+    ProfileForm.vue           # Editable form
+    PasswordChangeForm.vue    # Password change
+    AvatarUpload.vue          # Avatar upload
+    ProfileTabs.vue           # Tab navigation
+    ProfileCompleteness.vue   # Progress indicator
+
+stores/
+  user.ts            # User profile Pinia store
+
+middleware/
+  auth.ts            # Existing auth middleware (reuse)
+  profile-guard.ts   # Profile-specific guards (optional)
+
+types/
+  profile.d.ts       # TypeScript interfaces for profile
+```
+
+### Performance Targets
+- Profile page load: < 500ms
+- Form submission: < 1s
+- Avatar upload: < 3s for 5MB file
+- First Contentful Paint: < 1s
+- Time to Interactive: < 2s
