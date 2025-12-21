@@ -26,7 +26,15 @@
       "mcp__chrome-devtools__wait_for",
       "mcp__chrome-devtools__handle_dialog",
       "Bash(cmd /c \"del C:\\Users\\micth\\IdeaProjects\\nuxt_practice\\middleware\\auth.ts\")",
-      "mcp__chrome-devtools__evaluate_script"
+      "mcp__chrome-devtools__evaluate_script",
+      "Bash(npx task-master:*)",
+      "Bash(npx taskmaster --help:*)",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__chrome-devtools__take_screenshot",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\ntaskmaster 작업 상태 업데이트 - 사용자 프로필 관리 기능 완료\n\n10개의 사용자 프로필 관리 작업이 모두 완료됨:\n- 데이터베이스 스키마 및 타입 정의\n- Pinia 사용자 프로필 스토어 구현\n- 프로필 API 엔드포인트 구현\n- 프로필 조회/수정 페이지 구현\n- i18n 번역 추가\n- 비밀번호 변경 기능\n- 아바타 업로드 기능\n- 계정 설정 및 삭제 기능\n- 네비게이션 및 통합 테스트\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(pandoc:*)",
+      "Bash(winget install:*)"
     ]
   }
 }

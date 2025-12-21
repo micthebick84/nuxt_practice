@@ -30,12 +30,30 @@
           </q-list>
         </q-btn-dropdown>
 
-        <!-- Logout button -->
-        <q-btn
-          flat
-          :label="t('logout')"
-          @click="handleLogout"
-        />
+        <!-- Profile Menu -->
+        <q-btn-dropdown flat>
+          <template #label>
+            <q-avatar size="32px">
+              <img v-if="userStore.hasAvatar" :src="userStore.userProfile?.avatarUrl" />
+              <q-icon v-else name="person" />
+            </q-avatar>
+          </template>
+          <q-list>
+            <q-item clickable @click="navigateTo('/profile')">
+              <q-item-section avatar>
+                <q-icon name="person" />
+              </q-item-section>
+              <q-item-section>{{ t('profile.title') }}</q-item-section>
+            </q-item>
+            <q-separator />
+            <q-item clickable @click="handleLogout">
+              <q-item-section avatar>
+                <q-icon name="logout" />
+              </q-item-section>
+              <q-item-section>{{ t('logout') }}</q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
       </q-toolbar>
     </q-header>
 
@@ -48,10 +66,12 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '~/stores/auth'
+import { useUserStore } from '~/stores/user'
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 
 const authStore = useAuthStore()
+const userStore = useUserStore()
 const { t, locale } = useI18n()
 const tab = ref('home')
 const route = useRoute()
@@ -68,8 +88,16 @@ watch(
   { immediate: true }
 )
 
-onMounted(() => {
+onMounted(async () => {
   authStore.initializeAuth()
+  // Load user profile if authenticated
+  if (authStore.user?.userId) {
+    try {
+      await userStore.fetchProfile(authStore.user.userId)
+    } catch (error) {
+      // Profile fetch failed, but continue
+    }
+  }
 })
 
 const handleLogout = () => {

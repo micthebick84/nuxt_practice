@@ -18,7 +18,7 @@ export default defineNuxtConfig({
     },
   },
   quasar: {
-    /* */
+    plugins: ['Notify', 'Dialog'],
   },
   pinia: {
     autoImports: ['defineStore', 'acceptHMRUpdate'],
