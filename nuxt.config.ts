@@ -43,8 +43,21 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
+    // Server-only (secret)
+    oauth: {
+      clientSecret: process.env.OAUTH_CLIENT_SECRET || 'secret123',
+    },
     public: {
-      apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:8080'
-    }
+      apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:8080',
+      oauth: {
+        clientId: process.env.OAUTH_CLIENT_ID || 'nuxt-app',
+        authorizationEndpoint: process.env.OAUTH_AUTHORIZATION_ENDPOINT || 'http://localhost:9000/oauth2/authorize',
+        tokenEndpoint: process.env.OAUTH_TOKEN_ENDPOINT || 'http://localhost:9000/oauth2/token',
+        logoutEndpoint: process.env.OAUTH_LOGOUT_ENDPOINT || 'http://localhost:9000/logout',
+        redirectUri: process.env.OAUTH_REDIRECT_URI || 'http://localhost:3000/auth/callback',
+        postLogoutRedirectUri: process.env.OAUTH_POST_LOGOUT_REDIRECT_URI || 'http://localhost:3000/login?logout=true',
+        scope: process.env.OAUTH_SCOPE || 'openid profile email',
+      },
+    },
   }
 });

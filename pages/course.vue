@@ -28,7 +28,5 @@
 <script setup lang="ts">
 const { courses } = useCourses()
 
-definePageMeta({
-  middleware: ['auth']
-})
+// Auth middleware is global, no need to specify here
 </script>

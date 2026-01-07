@@ -107,7 +107,5 @@ const courseSlug = route.params.courseSlug as string
 const { course, prevCourse, nextCourse } = useCourse(courseSlug)
 const notes = ref('')
 
-definePageMeta({
-  middleware: ['auth']
-})
+// Auth middleware is global, no need to specify here
 </script>

@@ -100,10 +100,10 @@ onMounted(async () => {
   }
 })
 
-const handleLogout = () => {
+const handleLogout = async () => {
   if (confirm(t('logoutConfirm'))) {
-    authStore.logout()
-    navigateTo('/login')
+    // logout() will revoke token on OAuth server and clear local state
+    await authStore.logout()
   }
 }
 
