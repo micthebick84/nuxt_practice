@@ -1,4 +1,4 @@
-import pool from '../../../utils/db';
+import oracleDb from '../../../utils/oracleDb';
 
 export default defineEventHandler(async (event) => {
   const userId = getRouterParam(event, 'userId');
@@ -7,13 +7,21 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'User ID is required' });
   }
 
-  const result = await pool.query(`
-    SELECT u.user_id, u.user_name, u.email, u.created_at as join_date, u.last_login,
-           p.bio, p.phone, p.avatar_url, p.preferred_language,
-           p.email_notifications, p.updated_at
-    FROM com_user u
-    LEFT JOIN user_profiles p ON u.user_id = p.user_id
-    WHERE u.user_id = $1
+  const result = await oracleDb.query(`
+    SELECT
+      USER_ID,
+      USER_NAME,
+      EMAIL,
+      CELL_TEL as PHONE,
+      PASS_DATE as JOIN_DATE,
+      PASS_CHG_DATE as UPDATED_AT,
+      NULL as BIO,
+      NULL as AVATAR_URL,
+      'ko' as PREFERRED_LANGUAGE,
+      1 as EMAIL_NOTIFICATIONS,
+      NULL as LAST_LOGIN
+    FROM COM_USER
+    WHERE USER_ID = :1
   `, [userId]);
 
   if (result.rows.length === 0) {
@@ -24,19 +32,19 @@ export default defineEventHandler(async (event) => {
   return {
     success: true,
     data: {
-      id: row.id || 0,
-      userId: row.user_id,
-      userName: row.user_name,
-      email: row.email,
-      bio: row.bio,
-      phone: row.phone,
-      avatarUrl: row.avatar_url,
-      preferredLanguage: row.preferred_language || 'en',
-      emailNotifications: row.email_notifications ?? true,
-      joinDate: row.join_date,
-      lastLogin: row.last_login,
-      createdAt: row.created_at || new Date().toISOString(),
-      updatedAt: row.updated_at || new Date().toISOString(),
+      id: 0,
+      userId: row.USER_ID,
+      userName: row.USER_NAME,
+      email: row.EMAIL,
+      bio: row.BIO,
+      phone: row.PHONE,
+      avatarUrl: row.AVATAR_URL,
+      preferredLanguage: row.PREFERRED_LANGUAGE || 'ko',
+      emailNotifications: row.EMAIL_NOTIFICATIONS === 1,
+      joinDate: row.JOIN_DATE,
+      lastLogin: row.LAST_LOGIN,
+      createdAt: row.JOIN_DATE || new Date().toISOString(),
+      updatedAt: row.UPDATED_AT || new Date().toISOString(),
     },
   };
 });

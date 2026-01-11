@@ -1,4 +1,4 @@
-import pool from '../../../utils/db';
+import oracleDb from '../../../utils/oracleDb';
 
 export default defineEventHandler(async (event) => {
   const userId = getRouterParam(event, 'userId');
@@ -8,37 +8,62 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event);
-  const { name, bio, phone, preferredLanguage, emailNotifications } = body;
+  const { name, phone } = body;
 
-  // Update com_user if name changed
-  if (name) {
-    await pool.query(
-      'UPDATE com_user SET user_name = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2',
-      [name, userId]
-    );
+  // Build dynamic UPDATE query based on provided fields
+  const updateFields: string[] = [];
+  const updateValues: any[] = [];
+  let paramIndex = 1;
+
+  if (name !== undefined) {
+    updateFields.push(`USER_NAME = :${paramIndex}`);
+    updateValues.push(name);
+    paramIndex++;
   }
 
-  // Upsert user_profiles
-  await pool.query(`
-    INSERT INTO user_profiles (user_id, bio, phone, preferred_language, email_notifications, updated_at)
-    VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
-    ON CONFLICT (user_id) DO UPDATE SET
-      bio = COALESCE($2, user_profiles.bio),
-      phone = COALESCE($3, user_profiles.phone),
-      preferred_language = COALESCE($4, user_profiles.preferred_language),
-      email_notifications = COALESCE($5, user_profiles.email_notifications),
-      updated_at = CURRENT_TIMESTAMP
-  `, [userId, bio, phone, preferredLanguage, emailNotifications]);
+  if (phone !== undefined) {
+    updateFields.push(`CELL_TEL = :${paramIndex}`);
+    updateValues.push(phone);
+    paramIndex++;
+  }
+
+  // Always update the timestamp
+  updateFields.push('PASS_CHG_DATE = SYSTIMESTAMP');
+
+  // Add userId as the last parameter for WHERE clause
+  updateValues.push(userId);
+
+  if (updateFields.length > 1) { // More than just timestamp
+    const updateQuery = `
+      UPDATE COM_USER
+      SET ${updateFields.join(', ')}
+      WHERE USER_ID = :${paramIndex}
+    `;
+
+    await oracleDb.query(updateQuery, updateValues);
+  }
 
   // Fetch updated profile
-  const result = await pool.query(`
-    SELECT u.user_id, u.user_name, u.email, u.created_at as join_date, u.last_login,
-           p.bio, p.phone, p.avatar_url, p.preferred_language,
-           p.email_notifications, p.updated_at
-    FROM com_user u
-    LEFT JOIN user_profiles p ON u.user_id = p.user_id
-    WHERE u.user_id = $1
+  const result = await oracleDb.query(`
+    SELECT
+      USER_ID,
+      USER_NAME,
+      EMAIL,
+      CELL_TEL as PHONE,
+      PASS_DATE as JOIN_DATE,
+      PASS_CHG_DATE as UPDATED_AT,
+      NULL as BIO,
+      NULL as AVATAR_URL,
+      'ko' as PREFERRED_LANGUAGE,
+      1 as EMAIL_NOTIFICATIONS,
+      NULL as LAST_LOGIN
+    FROM COM_USER
+    WHERE USER_ID = :1
   `, [userId]);
+
+  if (result.rows.length === 0) {
+    throw createError({ statusCode: 404, statusMessage: 'User not found' });
+  }
 
   const row = result.rows[0];
 
@@ -46,19 +71,19 @@ export default defineEventHandler(async (event) => {
     success: true,
     message: 'Profile updated successfully',
     data: {
-      id: row.id || 0,
-      userId: row.user_id,
-      userName: row.user_name,
-      email: row.email,
-      bio: row.bio,
-      phone: row.phone,
-      avatarUrl: row.avatar_url,
-      preferredLanguage: row.preferred_language || 'en',
-      emailNotifications: row.email_notifications ?? true,
-      joinDate: row.join_date,
-      lastLogin: row.last_login,
-      createdAt: row.created_at || new Date().toISOString(),
-      updatedAt: row.updated_at || new Date().toISOString(),
+      id: 0,
+      userId: row.USER_ID,
+      userName: row.USER_NAME,
+      email: row.EMAIL,
+      bio: row.BIO,
+      phone: row.PHONE,
+      avatarUrl: row.AVATAR_URL,
+      preferredLanguage: row.PREFERRED_LANGUAGE || 'ko',
+      emailNotifications: row.EMAIL_NOTIFICATIONS === 1,
+      joinDate: row.JOIN_DATE,
+      lastLogin: row.LAST_LOGIN,
+      createdAt: row.JOIN_DATE || new Date().toISOString(),
+      updatedAt: row.UPDATED_AT || new Date().toISOString(),
     },
   };
 });
