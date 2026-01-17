@@ -1,0 +1,6 @@
+git branch vertical_menu 생성 후 작업 진행 
+상단 navigation_menu를 왼쪽 세로 형태의 메뉴로 표현
+- 메뉴는 기본적으로 아이콘 형태로 보여지고 마우스가 navigarion bar 위로 갔을경우에 반응형으로 메뉴가 확장되어지는 형태의 UX 구현
+- 메뉴 구성은 course 는 제외 (about, test, admin.. 그리고 설정(사용자 프로필,언어)는 메뉴의 제일 하단에 위치)
+
+  

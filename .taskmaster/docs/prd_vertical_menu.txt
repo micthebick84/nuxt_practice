@@ -1,0 +1,490 @@
+<context>
+# Overview
+Vertical Navigation Menu System for Nuxt 3 Application with Quasar Framework
+
+This PRD describes the implementation of a comprehensive vertical navigation menu (side drawer) system that provides hierarchical navigation, collapsible menu groups, and responsive behavior. The feature aims to improve application navigation structure and user experience across desktop and mobile devices.
+
+Target Users: All users of the application (both authenticated and public)
+Problem Solved: Current horizontal-only navigation is limited in displaying complex menu hierarchies
+Value: Enables better organization of menu items, supports multi-level navigation, and improves mobile UX
+
+# Core Features
+
+## 1. Vertical Drawer Navigation
+- Left-side drawer with collapsible behavior
+- Support for nested menu items (2-3 levels deep)
+- Icon-based navigation with text labels
+- Active route highlighting
+- Smooth open/close animations
+- Persistent state (remember open/closed across sessions)
+
+## 2. Menu Structure
+- Menu groups with expand/collapse functionality
+- Individual menu items with icons and labels
+- Badge/notification indicators for menu items
+- Separator lines between menu groups
+- Header section with app logo and branding
+
+## 3. Responsive Behavior
+- Desktop: Persistent drawer (always visible or collapsible)
+- Mobile/Tablet: Overlay drawer (opens over content)
+- Mini-mode: Collapsed state showing only icons
+- Breakpoint-based behavior switching
+- Touch-friendly menu items on mobile
+
+## 4. Integration Features
+- Works with existing Quasar QLayout system
+- Compatible with current route-based navigation
+- Supports role-based menu item visibility
+- i18n support for menu labels
+- Dynamic menu configuration from backend/config file
+
+# User Experience
+
+## User Personas
+1. **Power User**: Uses keyboard shortcuts and frequently accesses deep menu items
+2. **Mobile User**: Needs quick access to main features via touch interface
+3. **Admin User**: Requires access to additional admin menu items
+
+## Key User Flows
+
+### Flow 1: Open/Close Drawer (Desktop)
+1. User clicks hamburger menu button in header
+2. Drawer slides out from left side
+3. Menu items become visible with smooth animation
+4. User clicks button again or clicks overlay to close
+5. Drawer slides back with animation
+
+### Flow 2: Navigate to Nested Menu (Desktop)
+1. User opens drawer
+2. User clicks on menu group (e.g., "Admin")
+3. Group expands showing sub-items
+4. User clicks sub-item
+5. Route changes, drawer closes (configurable)
+6. Active menu item highlighted
+
+### Flow 3: Mobile Navigation
+1. User taps hamburger icon
+2. Drawer overlays entire screen
+3. User taps menu item
+4. Drawer auto-closes
+5. Route navigates to selected page
+
+## UI/UX Considerations
+- Use Quasar's QDrawer component
+- Implement QList and QItem for menu structure
+- Use QExpansionItem for collapsible groups
+- QIcon for menu item icons
+- QTooltip for collapsed/mini mode
+- Smooth transitions (300ms default)
+- Subtle hover effects on menu items
+- Clear visual hierarchy (font sizes, colors)
+- Keyboard navigation support (Tab, Enter, Arrow keys)
+</context>
+
+<PRD>
+# Technical Architecture
+
+## Frontend Components
+- `/layouts/default.vue` - Modified to include QDrawer
+- `/components/navigation/VerticalMenu.vue` - Main vertical menu component
+- `/components/navigation/MenuItem.vue` - Reusable menu item component
+- `/components/navigation/MenuGroup.vue` - Collapsible menu group component
+- `/composables/useVerticalMenu.ts` - Menu state management composable
+
+## State Management (Pinia or Composable)
+- `stores/menu.ts` or `composables/useVerticalMenu.ts`
+  - State: `isOpen`, `miniMode`, `activeRoute`, `menuConfig`
+  - Actions: `toggleDrawer()`, `setMiniMode()`, `closeDrawer()`, `openDrawer()`
+  - Getters: `visibleMenuItems` (based on auth/role), `activeMenuItem`
+
+## Menu Configuration Structure
+```typescript
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: string;
+  route?: string;
+  children?: MenuItem[];
+  badge?: number | string;
+  roles?: string[]; // For role-based visibility
+  separator?: boolean;
+  disabled?: boolean;
+}
+
+interface MenuConfig {
+  items: MenuItem[];
+  miniMode: boolean;
+  persistent: boolean; // Desktop: stays open
+  overlay: boolean; // Mobile: overlays content
+  width: number; // Default 280px
+  miniWidth: number; // Default 60px
+}
+```
+
+## Sample Menu Structure
+```typescript
+const menuItems: MenuItem[] = [
+  {
+    id: 'home',
+    label: 'Home',
+    icon: 'home',
+    route: '/',
+  },
+  {
+    id: 'about',
+    label: 'About',
+    icon: 'info',
+    route: '/about',
+  },
+  {
+    id: 'courses',
+    label: 'Courses',
+    icon: 'school',
+    children: [
+      { id: 'html-css', label: 'HTML & CSS', icon: 'code', route: '/course/html-css' },
+      { id: 'javascript', label: 'JavaScript', icon: 'javascript', route: '/course/javascript' },
+      { id: 'vue', label: 'Vue.js', icon: 'mdi-vuejs', route: '/course/vue3-basic' },
+    ],
+  },
+  {
+    id: 'admin',
+    label: 'Admin',
+    icon: 'admin_panel_settings',
+    roles: ['admin'],
+    children: [
+      { id: 'users', label: 'Users', icon: 'people', route: '/admin/users' },
+      { id: 'settings', label: 'Settings', icon: 'settings', route: '/admin/settings' },
+    ],
+  },
+  {
+    id: 'profile',
+    label: 'Profile',
+    icon: 'person',
+    route: '/profile',
+    separator: true,
+  },
+];
+```
+
+## Responsive Breakpoints
+- Desktop (>= 1024px): Persistent drawer with toggle
+- Tablet (768px - 1023px): Overlay drawer
+- Mobile (< 768px): Overlay drawer with auto-close
+
+## Local Storage Keys
+- `app-menu-open`: Boolean for drawer state
+- `app-menu-mini`: Boolean for mini mode
+- `app-menu-expanded-groups`: Array of expanded group IDs
+
+# Development Roadmap
+
+## Phase 1: Basic Vertical Menu Structure
+**Scope**: Core drawer navigation with static menu items
+- Modify default.vue layout to include QDrawer
+- Create VerticalMenu.vue component with basic menu structure
+- Implement menu items from menuConfig
+- Add icons and labels to menu items
+- Basic open/close functionality
+- Active route highlighting
+
+**Deliverables**:
+- Functional vertical menu with static items
+- Open/close drawer with button click
+- Active menu item visually highlighted
+
+## Phase 2: Collapsible Menu Groups
+**Scope**: Nested navigation with expand/collapse
+- Implement QExpansionItem for menu groups
+- Add expand/collapse animations
+- Persist expanded state to localStorage
+- Support 2-level nesting (group → items)
+- Icon rotation on expand/collapse
+
+**Deliverables**:
+- Menu groups expand/collapse on click
+- Expanded state persists across page refreshes
+- Smooth animations
+
+## Phase 3: Responsive Behavior
+**Scope**: Mobile and tablet support
+- Implement breakpoint-based drawer behavior
+- Overlay mode for mobile/tablet
+- Auto-close on mobile after navigation
+- Touch-optimized menu items
+- Hamburger menu toggle in header
+
+**Deliverables**:
+- Drawer works responsively across all screen sizes
+- Mobile overlay behavior
+- Auto-close on route change (mobile only)
+
+## Phase 4: Mini Mode
+**Scope**: Collapsed state showing only icons
+- Mini mode toggle button
+- Tooltip display in mini mode
+- Persist mini mode state
+- Smooth transition between full/mini mode
+- Icon-only display with hover tooltips
+
+**Deliverables**:
+- Mini mode functional with tooltips
+- Toggle between full and mini mode
+- State persists across sessions
+
+## Phase 5: Advanced Features
+**Scope**: Role-based visibility, badges, keyboard nav
+- Role-based menu item filtering
+- Badge/notification indicators
+- Keyboard navigation (Tab, Enter, Arrows)
+- Dynamic menu configuration from backend
+- Menu search/filter functionality
+- Customizable menu themes
+
+**Deliverables**:
+- Role-based menu visibility
+- Notification badges on menu items
+- Keyboard shortcuts working
+- Menu configuration API integration
+
+# Logical Dependency Chain
+
+## Foundation Layer (Must Build First)
+1. **Layout Modification** - Update default.vue with QDrawer
+   - Required for all subsequent features
+   - Establishes drawer structure and positioning
+
+2. **Menu Composable/Store** - State management setup
+   - Central state for drawer open/close
+   - Actions for menu operations
+   - Getters for computed values
+
+3. **Menu Configuration** - Define menu structure
+   - Static menu items array
+   - Type definitions for MenuItem
+   - Icon mapping
+
+## Core UI Layer (Quick Visibility)
+4. **Basic VerticalMenu Component** - Renders menu items
+   - List-based menu display
+   - Icon + label for each item
+   - Click handlers for navigation
+   - Active route highlighting
+
+5. **Open/Close Functionality** - Drawer toggle
+   - Button in header to toggle
+   - Smooth open/close animations
+   - State persistence to localStorage
+
+## Iterative Enhancement Layers
+6. **Collapsible Groups** - Nested menu support
+   - QExpansionItem implementation
+   - Expand/collapse animations
+   - Multi-level nesting support
+
+7. **Responsive Behavior** - Mobile/tablet support
+   - Breakpoint detection
+   - Overlay mode for small screens
+   - Auto-close on navigation (mobile)
+
+8. **Mini Mode** - Icon-only collapsed state
+   - Toggle mini mode
+   - Tooltip display
+   - Width transitions
+
+9. **Advanced Features** - Polish and extras
+   - Role-based filtering
+   - Badges and notifications
+   - Keyboard navigation
+   - Search functionality
+
+## Atomic Feature Scoping Strategy
+- Each phase can be broken into tasks that take ~2-4 hours
+- Each task produces a working, testable increment
+- Tasks are sequenced to minimize blocking dependencies
+- Early tasks prioritize visible frontend progress
+
+# Risks and Mitigations
+
+## Technical Challenges
+
+### Risk: Nested Menu Performance
+- **Challenge**: Deep nesting with many items may cause performance issues
+- **Mitigation**:
+  - Limit nesting to 2-3 levels maximum
+  - Use virtual scrolling for large menus
+  - Lazy load menu groups
+  - Optimize re-renders with proper Vue reactivity
+
+### Risk: State Synchronization
+- **Challenge**: Drawer state not syncing across components
+- **Mitigation**:
+  - Use Pinia store for centralized state
+  - Implement watch handlers for route changes
+  - Test state persistence carefully
+
+### Risk: Mobile Touch Conflicts
+- **Challenge**: Touch gestures may conflict with drawer swipe
+- **Mitigation**:
+  - Use Quasar's built-in touch directives
+  - Configure swipe sensitivity
+  - Provide clear close button on mobile
+
+## MVP Definition
+
+### Core MVP Requirements
+1. Vertical drawer opens/closes on desktop
+2. Menu items navigate to routes
+3. Active route highlighted
+4. Collapsible menu groups (1 level)
+5. Responsive overlay mode on mobile
+6. State persists on refresh
+
+### Out of Scope for MVP
+- Mini mode (Phase 4)
+- Role-based filtering (Phase 5)
+- Keyboard navigation (Phase 5)
+- Badge indicators (Phase 5)
+- Menu search (Phase 5)
+
+### MVP Success Criteria
+- Drawer opens in < 200ms on click
+- No layout shifts on drawer open/close
+- 100% of menu items navigable
+- Mobile overlay doesn't cause scroll issues
+- Works on Chrome, Firefox, Safari, Edge
+
+## Resource Constraints
+
+### Development Time
+- **Constraint**: Limited time to implement all features
+- **Mitigation**: Phased approach allows shipping MVP quickly
+
+### Design Assets
+- **Constraint**: Need icons for all menu items
+- **Mitigation**: Use Material Design Icons (included in Quasar)
+
+### Testing Coverage
+- **Constraint**: Comprehensive testing takes time
+- **Mitigation**:
+  - Focus on critical paths for MVP
+  - Manual testing checklist for each phase
+  - Automated E2E tests for key flows
+
+# Appendix
+
+## Research Findings
+
+### Industry Best Practices
+- Most admin dashboards use left-side vertical navigation
+- Mini mode (icon-only) is popular for space efficiency
+- Mobile: overlay drawer is standard (not push)
+- Average menu width: 250-300px
+- Mini mode width: 50-70px
+
+### Competitive Analysis
+- **Vuetify Admin**: Persistent drawer with mini mode toggle
+- **Ant Design**: Collapsible groups, inline sub-menus
+- **Material-UI**: Drawer with temporary/permanent variants
+- **Quasar Admin Templates**: Use QDrawer with QList
+
+### User Research Insights
+- Users prefer menu to be visible on desktop
+- Mini mode helps on smaller desktop screens
+- Mobile users expect drawer to close after navigation
+- Clear visual feedback for active menu item is essential
+
+## Technical Specifications
+
+### Quasar QDrawer Configuration
+```vue
+<q-drawer
+  v-model="menuStore.isOpen"
+  :width="menuStore.miniMode ? 60 : 280"
+  :breakpoint="1024"
+  :overlay="$q.screen.lt.md"
+  :persistent="$q.screen.gt.sm"
+  bordered
+  class="bg-grey-1"
+>
+  <VerticalMenu />
+</q-drawer>
+```
+
+### CSS Transitions
+```css
+.q-drawer {
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-item {
+  transition: background-color 0.2s ease;
+}
+
+.menu-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.menu-item--active {
+  background-color: var(--q-color-primary);
+  color: white;
+}
+```
+
+### i18n Translation Keys
+```javascript
+{
+  en: {
+    menu: {
+      home: 'Home',
+      about: 'About',
+      courses: 'Courses',
+      admin: 'Admin',
+      profile: 'Profile',
+      settings: 'Settings',
+      logout: 'Logout',
+      toggleMini: 'Collapse Menu',
+      toggleFull: 'Expand Menu',
+    },
+  },
+  ko: {
+    menu: {
+      home: '홈',
+      about: '소개',
+      courses: '강좌',
+      admin: '관리자',
+      profile: '프로필',
+      settings: '설정',
+      logout: '로그아웃',
+      toggleMini: '메뉴 축소',
+      toggleFull: '메뉴 확장',
+    },
+  },
+}
+```
+
+### Component Structure
+```
+layouts/
+  default.vue          # Modified with QDrawer
+
+components/
+  navigation/
+    VerticalMenu.vue        # Main vertical menu
+    MenuItem.vue            # Single menu item
+    MenuGroup.vue           # Collapsible group
+    MiniModeToggle.vue      # Toggle button
+
+composables/
+  useVerticalMenu.ts   # Menu state management
+
+types/
+  menu.d.ts            # MenuItem, MenuConfig interfaces
+```
+
+### Performance Targets
+- Drawer open/close: < 200ms
+- Menu item click response: < 50ms
+- No jank during animations (60fps)
+- Initial menu render: < 100ms
+</PRD>

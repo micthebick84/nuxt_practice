@@ -1,10 +1,14 @@
 import { createI18n } from 'vue-i18n';
 
 export default defineNuxtPlugin(({ vueApp }) => {
+  // Get saved locale from localStorage or default to 'en'
+  const savedLocale = process.client ? localStorage.getItem('app-locale') || 'en' : 'en';
+
   const i18n = createI18n({
     legacy: false,
     globalInjection: true,
-    locale: 'en',
+    locale: savedLocale,
+    fallbackLocale: 'en',
     messages: {
       en: {
         home: 'Home',
@@ -15,6 +19,28 @@ export default defineNuxtPlugin(({ vueApp }) => {
         logoutConfirm: 'Are you sure you want to logout?',
         yes: 'Yes',
         no: 'No',
+        app: {
+          name: 'Nuxt Practice',
+          tagline: 'Learning Platform',
+        },
+        menu: {
+          home: 'Home',
+          about: 'About',
+          courses: 'Courses',
+          'html-css': 'HTML & CSS',
+          javascript: 'JavaScript',
+          vue: 'Vue.js',
+          frontend: 'Frontend Wings',
+          test: 'Test',
+          admin: 'Admin',
+          'admin-index': 'Dashboard',
+          'admin-settings': 'Settings',
+          profile: 'Profile',
+          settings: 'Settings',
+          language: 'Language',
+          toggleMini: 'Collapse Menu',
+          toggleFull: 'Expand Menu',
+        },
         profile: {
           title: 'My Profile',
           edit: 'Edit Profile',
@@ -75,6 +101,28 @@ export default defineNuxtPlugin(({ vueApp }) => {
         logoutConfirm: '정말로 로그아웃하시겠습니까?',
         yes: '예',
         no: '아니오',
+        app: {
+          name: 'Nuxt Practice',
+          tagline: '학습 플랫폼',
+        },
+        menu: {
+          home: '홈',
+          about: '소개',
+          courses: '강좌',
+          'html-css': 'HTML & CSS',
+          javascript: 'JavaScript',
+          vue: 'Vue.js',
+          frontend: '프론트엔드 Wings',
+          test: '테스트',
+          admin: '관리자',
+          'admin-index': '대시보드',
+          'admin-settings': '설정',
+          profile: '프로필',
+          settings: '설정',
+          language: '언어',
+          toggleMini: '메뉴 축소',
+          toggleFull: '메뉴 확장',
+        },
         profile: {
           title: '내 프로필',
           edit: '프로필 수정',

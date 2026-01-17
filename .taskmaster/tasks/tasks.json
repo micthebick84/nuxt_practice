@@ -1,4 +1,123 @@
 {
+  "vertical_menu": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "메뉴 타입 정의 및 설정 파일 생성",
+        "description": "수직 메뉴를 위한 TypeScript 인터페이스 정의 및 메뉴 설정 파일 생성",
+        "details": "1. types/menu.d.ts 파일 생성:\n```typescript\nexport interface MenuItem {\n  id: string;\n  label: string;\n  icon: string;\n  route?: string;\n  children?: MenuItem[];\n  badge?: number | string;\n  roles?: string[];\n  separator?: boolean;\n  disabled?: boolean;\n  external?: boolean;\n}\n\nexport interface MenuConfig {\n  items: MenuItem[];\n  miniMode: boolean;\n  persistent: boolean;\n  overlay: boolean;\n  width: number;\n  miniWidth: number;\n}\n\nexport interface MenuState {\n  isOpen: boolean;\n  miniMode: boolean;\n  activeRoute: string;\n  expandedGroups: string[];\n}\n```\n\n2. config/menu.ts 파일 생성:\n```typescript\nimport type { MenuItem } from '~/types/menu';\n\nexport const menuItems: MenuItem[] = [\n  {\n    id: 'home',\n    label: 'Home',\n    icon: 'home',\n    route: '/',\n  },\n  {\n    id: 'about',\n    label: 'About',\n    icon: 'info',\n    route: '/about',\n  },\n  {\n    id: 'courses',\n    label: 'Courses',\n    icon: 'school',\n    children: [\n      { id: 'html-css', label: 'HTML & CSS', icon: 'code', route: '/course/html-css' },\n      { id: 'javascript', label: 'JavaScript', icon: 'javascript', route: '/course/javascript' },\n      { id: 'vue', label: 'Vue.js', icon: 'mdi-vuejs', route: '/course/vue3-basic' },\n      { id: 'frontend', label: 'Frontend Wings', icon: 'flight', route: '/course/frontend' },\n    ],\n  },\n  {\n    id: 'test',\n    label: 'Test',\n    icon: 'science',\n    route: '/test',\n  },\n  {\n    id: 'admin',\n    label: 'Admin',\n    icon: 'admin_panel_settings',\n    roles: ['admin'],\n    separator: true,\n    children: [\n      { id: 'admin-index', label: 'Dashboard', icon: 'dashboard', route: '/admin' },\n      { id: 'admin-settings', label: 'Settings', icon: 'settings', route: '/admin/settings' },\n    ],\n  },\n  {\n    id: 'profile',\n    label: 'Profile',\n    icon: 'person',\n    route: '/profile',\n    separator: true,\n  },\n];\n\nexport const menuConfig = {\n  width: 280,\n  miniWidth: 60,\n  breakpoint: 1024,\n};\n```",
+        "testStrategy": "1. TypeScript 타입이 올바르게 정의되었는지 확인\n2. menuItems 배열이 올바른 구조를 가지는지 확인\n3. import 시 타입 에러가 없는지 확인\n4. 중첩된 children 구조가 올바른지 확인",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "메뉴 상태 관리 Composable 구현",
+        "description": "수직 메뉴의 상태를 관리하는 useVerticalMenu composable 생성",
+        "details": "composables/useVerticalMenu.ts 파일 생성:\n```typescript\nimport { ref, computed } from 'vue';\nimport { useRouter, useRoute } from 'vue-router';\nimport type { MenuItem, MenuState } from '~/types/menu';\nimport { menuItems } from '~/config/menu';\n\nconst state = ref<MenuState>({\n  isOpen: true,\n  miniMode: false,\n  activeRoute: '',\n  expandedGroups: [],\n});\n\nexport const useVerticalMenu = () => {\n  const router = useRouter();\n  const route = useRoute();\n\n  // Load state from localStorage\n  if (process.client) {\n    const saved = localStorage.getItem('app-menu-state');\n    if (saved) {\n      try {\n        const parsed = JSON.parse(saved);\n        state.value = { ...state.value, ...parsed };\n      } catch (e) {\n        console.error('Failed to parse menu state:', e);\n      }\n    }\n  }\n\n  // Save state to localStorage\n  const saveState = () => {\n    if (process.client) {\n      localStorage.setItem('app-menu-state', JSON.stringify(state.value));\n    }\n  };\n\n  // Actions\n  const toggleDrawer = () => {\n    state.value.isOpen = !state.value.isOpen;\n    saveState();\n  };\n\n  const openDrawer = () => {\n    state.value.isOpen = true;\n    saveState();\n  };\n\n  const closeDrawer = () => {\n    state.value.isOpen = false;\n    saveState();\n  };\n\n  const toggleMiniMode = () => {\n    state.value.miniMode = !state.value.miniMode;\n    saveState();\n  };\n\n  const setMiniMode = (mini: boolean) => {\n    state.value.miniMode = mini;\n    saveState();\n  };\n\n  const toggleGroup = (groupId: string) => {\n    const index = state.value.expandedGroups.indexOf(groupId);\n    if (index > -1) {\n      state.value.expandedGroups.splice(index, 1);\n    } else {\n      state.value.expandedGroups.push(groupId);\n    }\n    saveState();\n  };\n\n  const isGroupExpanded = (groupId: string) => {\n    return state.value.expandedGroups.includes(groupId);\n  };\n\n  const navigate = (item: MenuItem) => {\n    if (item.route) {\n      router.push(item.route);\n      // Auto-close on mobile\n      if (process.client && window.innerWidth < 1024) {\n        closeDrawer();\n      }\n    }\n  };\n\n  // Getters\n  const visibleMenuItems = computed(() => {\n    // TODO: Filter based on user roles\n    return menuItems;\n  });\n\n  const activeMenuItem = computed(() => {\n    return state.value.activeRoute;\n  });\n\n  // Watch route changes\n  if (process.client) {\n    watch(() => route.path, (newPath) => {\n      state.value.activeRoute = newPath;\n    }, { immediate: true });\n  }\n\n  return {\n    // State\n    state: readonly(state),\n    \n    // Actions\n    toggleDrawer,\n    openDrawer,\n    closeDrawer,\n    toggleMiniMode,\n    setMiniMode,\n    toggleGroup,\n    isGroupExpanded,\n    navigate,\n    \n    // Getters\n    visibleMenuItems,\n    activeMenuItem,\n  };\n};\n```",
+        "testStrategy": "1. toggleDrawer() 호출 시 isOpen 상태 전환 확인\n2. localStorage에 상태 저장 확인\n3. 페이지 리로드 후 상태 복원 확인\n4. toggleGroup() 동작 확인\n5. navigate() 호출 시 라우팅 동작 확인\n6. 모바일에서 navigate 후 drawer 자동 닫힘 확인",
+        "priority": "high",
+        "dependencies": [1],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "MenuItem 컴포넌트 구현",
+        "description": "개별 메뉴 아이템을 렌더링하는 재사용 가능한 컴포넌트",
+        "details": "components/navigation/MenuItem.vue 생성:\n```vue\n<template>\n  <q-item\n    clickable\n    :active=\"isActive\"\n    @click=\"handleClick\"\n    class=\"menu-item\"\n    :class=\"{ 'menu-item--active': isActive }\"\n  >\n    <q-item-section avatar>\n      <q-icon :name=\"item.icon\" />\n    </q-item-section>\n\n    <q-item-section v-if=\"!miniMode\">\n      <q-item-label>{{ t(`menu.${item.id}`) }}</q-item-label>\n    </q-item-section>\n\n    <q-item-section side v-if=\"item.badge && !miniMode\">\n      <q-badge color=\"red\" :label=\"item.badge\" />\n    </q-item-section>\n\n    <q-tooltip\n      v-if=\"miniMode\"\n      anchor=\"center right\"\n      self=\"center left\"\n      :offset=\"[10, 0]\"\n    >\n      {{ t(`menu.${item.id}`) }}\n    </q-tooltip>\n  </q-item>\n</template>\n\n<script setup lang=\"ts\">\nimport { computed } from 'vue';\nimport { useI18n } from 'vue-i18n';\nimport { useRoute } from 'vue-router';\nimport type { MenuItem as MenuItemType } from '~/types/menu';\n\nconst props = defineProps<{\n  item: MenuItemType;\n  miniMode?: boolean;\n}>();\n\nconst emit = defineEmits<{\n  click: [item: MenuItemType];\n}>();\n\nconst { t } = useI18n();\nconst route = useRoute();\n\nconst isActive = computed(() => {\n  return route.path === props.item.route;\n});\n\nconst handleClick = () => {\n  if (!props.item.disabled) {\n    emit('click', props.item);\n  }\n};\n</script>\n\n<style scoped>\n.menu-item {\n  transition: background-color 0.2s ease;\n}\n\n.menu-item--active {\n  background-color: var(--q-color-primary);\n  color: white;\n}\n\n.menu-item--active :deep(.q-icon) {\n  color: white;\n}\n</style>\n```",
+        "testStrategy": "1. 메뉴 아이템 클릭 시 emit 이벤트 발생 확인\n2. 현재 라우트와 일치 시 active 스타일 적용 확인\n3. miniMode에서 tooltip 표시 확인\n4. badge 표시 확인\n5. disabled 상태에서 클릭 불가 확인\n6. i18n 번역 키 적용 확인",
+        "priority": "high",
+        "dependencies": [1, 2],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "MenuGroup 컴포넌트 구현",
+        "description": "확장/축소 가능한 메뉴 그룹 컴포넌트",
+        "details": "components/navigation/MenuGroup.vue 생성:\n```vue\n<template>\n  <q-expansion-item\n    v-model=\"expanded\"\n    :icon=\"group.icon\"\n    :label=\"miniMode ? '' : t(`menu.${group.id}`)\"\n    :header-class=\"miniMode ? 'q-px-sm' : ''\"\n    class=\"menu-group\"\n  >\n    <template #header v-if=\"miniMode\">\n      <q-item-section avatar>\n        <q-icon :name=\"group.icon\" />\n      </q-item-section>\n      <q-tooltip\n        anchor=\"center right\"\n        self=\"center left\"\n        :offset=\"[10, 0]\"\n      >\n        {{ t(`menu.${group.id}`) }}\n      </q-tooltip>\n    </template>\n\n    <MenuItem\n      v-for=\"child in group.children\"\n      :key=\"child.id\"\n      :item=\"child\"\n      :mini-mode=\"miniMode\"\n      class=\"q-pl-lg\"\n      @click=\"handleItemClick\"\n    />\n  </q-expansion-item>\n</template>\n\n<script setup lang=\"ts\">\nimport { ref, watch } from 'vue';\nimport { useI18n } from 'vue-i18n';\nimport type { MenuItem as MenuItemType } from '~/types/menu';\nimport { useVerticalMenu } from '~/composables/useVerticalMenu';\nimport MenuItem from './MenuItem.vue';\n\nconst props = defineProps<{\n  group: MenuItemType;\n  miniMode?: boolean;\n}>();\n\nconst emit = defineEmits<{\n  itemClick: [item: MenuItemType];\n}>();\n\nconst { t } = useI18n();\nconst { isGroupExpanded, toggleGroup } = useVerticalMenu();\n\nconst expanded = ref(isGroupExpanded(props.group.id));\n\nwatch(expanded, (newVal) => {\n  if (newVal !== isGroupExpanded(props.group.id)) {\n    toggleGroup(props.group.id);\n  }\n});\n\nconst handleItemClick = (item: MenuItemType) => {\n  emit('itemClick', item);\n};\n</script>\n\n<style scoped>\n.menu-group :deep(.q-item) {\n  padding-left: 2rem;\n}\n</style>\n```",
+        "testStrategy": "1. 그룹 클릭 시 확장/축소 동작 확인\n2. 확장 상태가 localStorage에 저장되는지 확인\n3. 페이지 리로드 후 확장 상태 유지 확인\n4. miniMode에서 tooltip 표시 확인\n5. 자식 아이템 클릭 시 이벤트 전파 확인\n6. 들여쓰기 스타일 적용 확인",
+        "priority": "high",
+        "dependencies": [1, 2, 3],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "VerticalMenu 메인 컴포넌트 구현",
+        "description": "전체 수직 메뉴를 렌더링하는 메인 컴포넌트",
+        "details": "components/navigation/VerticalMenu.vue 생성:\n```vue\n<template>\n  <div class=\"vertical-menu column no-wrap full-height\">\n    <!-- Header -->\n    <q-item class=\"menu-header bg-primary text-white\">\n      <q-item-section avatar v-if=\"!state.miniMode\">\n        <q-icon name=\"school\" size=\"md\" />\n      </q-item-section>\n      <q-item-section v-if=\"!state.miniMode\">\n        <q-item-label class=\"text-h6\">{{ t('app.name') }}</q-item-label>\n        <q-item-label caption class=\"text-white\">{{ t('app.tagline') }}</q-item-label>\n      </q-item-section>\n      <q-item-section side>\n        <q-btn\n          flat\n          dense\n          round\n          icon=\"menu_open\"\n          :title=\"t('menu.toggleMini')\"\n          @click=\"toggleMiniMode\"\n        />\n      </q-item-section>\n    </q-item>\n\n    <q-separator />\n\n    <!-- Menu Items -->\n    <q-scroll-area class=\"col\">\n      <q-list padding>\n        <template v-for=\"item in visibleMenuItems\" :key=\"item.id\">\n          <q-separator v-if=\"item.separator\" class=\"q-my-sm\" />\n\n          <!-- Group with children -->\n          <MenuGroup\n            v-if=\"item.children && item.children.length > 0\"\n            :group=\"item\"\n            :mini-mode=\"state.miniMode\"\n            @item-click=\"navigate\"\n          />\n\n          <!-- Single item -->\n          <MenuItem\n            v-else\n            :item=\"item\"\n            :mini-mode=\"state.miniMode\"\n            @click=\"navigate\"\n          />\n        </template>\n      </q-list>\n    </q-scroll-area>\n\n    <!-- Footer -->\n    <q-separator />\n    <div class=\"menu-footer q-pa-sm text-center text-caption text-grey\" v-if=\"!state.miniMode\">\n      <div>© 2026 Nuxt Practice</div>\n      <div class=\"text-weight-light\">v1.0.0</div>\n    </div>\n  </div>\n</template>\n\n<script setup lang=\"ts\">\nimport { useI18n } from 'vue-i18n';\nimport { useVerticalMenu } from '~/composables/useVerticalMenu';\nimport MenuItem from './MenuItem.vue';\nimport MenuGroup from './MenuGroup.vue';\nimport type { MenuItem as MenuItemType } from '~/types/menu';\n\nconst { t } = useI18n();\nconst {\n  state,\n  toggleMiniMode,\n  navigate,\n  visibleMenuItems,\n} = useVerticalMenu();\n</script>\n\n<style scoped>\n.vertical-menu {\n  background-color: #f5f5f5;\n}\n\n.menu-header {\n  min-height: 64px;\n}\n\n.menu-footer {\n  background-color: #fafafa;\n}\n</style>\n```",
+        "testStrategy": "1. 모든 메뉴 아이템이 올바르게 렌더링되는지 확인\n2. 그룹과 단일 아이템이 구분되어 표시되는지 확인\n3. mini mode 토글 버튼 동작 확인\n4. separator가 올바른 위치에 표시되는지 확인\n5. 스크롤 영역이 정상 작동하는지 확인\n6. header와 footer가 고정되는지 확인",
+        "priority": "high",
+        "dependencies": [1, 2, 3, 4],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "default.vue 레이아웃에 QDrawer 통합",
+        "description": "기존 레이아웃에 수직 메뉴 drawer 추가 및 반응형 설정",
+        "details": "layouts/default.vue 수정:\n```vue\n<template>\n  <q-layout view=\"lHh Lpr lFf\">\n    <!-- Vertical Menu Drawer -->\n    <q-drawer\n      v-model=\"menuState.isOpen\"\n      :width=\"menuState.miniMode ? 60 : 280\"\n      :mini=\"menuState.miniMode\"\n      :breakpoint=\"1024\"\n      :overlay=\"$q.screen.lt.lg\"\n      :persistent=\"$q.screen.gt.md\"\n      bordered\n      class=\"bg-grey-1\"\n    >\n      <VerticalMenu />\n    </q-drawer>\n\n    <q-header elevated class=\"bg-primary text-white\">\n      <q-toolbar>\n        <!-- Hamburger Menu Button -->\n        <q-btn\n          flat\n          dense\n          round\n          icon=\"menu\"\n          @click=\"toggleDrawer\"\n          aria-label=\"Toggle menu\"\n        />\n\n        <q-toolbar-title>\n          {{ $route.meta.title || 'Nuxt Practice' }}\n        </q-toolbar-title>\n\n        <!-- Existing language switcher and user menu -->\n        <q-btn-dropdown flat :label=\"locale.toUpperCase()\">\n          <q-list>\n            <q-item clickable @click=\"setLocale('en')\">\n              <q-item-section>English</q-item-section>\n            </q-item>\n            <q-item clickable @click=\"setLocale('ko')\">\n              <q-item-section>한국어</q-item-section>\n            </q-item>\n          </q-list>\n        </q-btn-dropdown>\n\n        <q-btn flat round icon=\"person\" @click=\"navigateTo('/profile')\" />\n      </q-toolbar>\n    </q-header>\n\n    <q-page-container>\n      <slot />\n    </q-page-container>\n  </q-layout>\n</template>\n\n<script setup lang=\"ts\">\nimport { useI18n } from 'vue-i18n';\nimport { useQuasar } from 'quasar';\nimport { useVerticalMenu } from '~/composables/useVerticalMenu';\nimport VerticalMenu from '~/components/navigation/VerticalMenu.vue';\n\nconst { locale } = useI18n();\nconst $q = useQuasar();\nconst { state: menuState, toggleDrawer } = useVerticalMenu();\n\nconst setLocale = (newLocale: string) => {\n  locale.value = newLocale;\n};\n</script>\n```",
+        "testStrategy": "1. drawer가 화면 왼쪽에 올바르게 표시되는지 확인\n2. hamburger 버튼 클릭 시 drawer 열림/닫힘 확인\n3. 1024px 이상에서 persistent 동작 확인\n4. 1024px 미만에서 overlay 동작 확인\n5. mini mode 전환 시 drawer 너비 변경 확인\n6. 기존 header 기능이 정상 작동하는지 확인",
+        "priority": "high",
+        "dependencies": [5],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "i18n 메뉴 번역 키 추가",
+        "description": "메뉴 관련 다국어 지원을 위한 번역 키 추가",
+        "details": "plugins/i18n.ts 파일에 메뉴 관련 번역 추가:\n```typescript\nmessages: {\n  en: {\n    app: {\n      name: 'Nuxt Practice',\n      tagline: 'Learning Platform',\n    },\n    menu: {\n      home: 'Home',\n      about: 'About',\n      courses: 'Courses',\n      'html-css': 'HTML & CSS',\n      javascript: 'JavaScript',\n      vue: 'Vue.js',\n      frontend: 'Frontend Wings',\n      test: 'Test',\n      admin: 'Admin',\n      'admin-index': 'Dashboard',\n      'admin-settings': 'Settings',\n      profile: 'Profile',\n      toggleMini: 'Collapse Menu',\n      toggleFull: 'Expand Menu',\n    },\n  },\n  ko: {\n    app: {\n      name: 'Nuxt Practice',\n      tagline: '학습 플랫폼',\n    },\n    menu: {\n      home: '홈',\n      about: '소개',\n      courses: '강좌',\n      'html-css': 'HTML & CSS',\n      javascript: 'JavaScript',\n      vue: 'Vue.js',\n      frontend: '프론트엔드 Wings',\n      test: '테스트',\n      admin: '관리자',\n      'admin-index': '대시보드',\n      'admin-settings': '설정',\n      profile: '프로필',\n      toggleMini: '메뉴 축소',\n      toggleFull: '메뉴 확장',\n    },\n  },\n}\n```",
+        "testStrategy": "1. 영어/한국어 전환 시 모든 메뉴 아이템 번역 확인\n2. 누락된 번역 키 없는지 확인\n3. 중첩 키 접근 정상 동작 확인",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "반응형 동작 및 모바일 최적화",
+        "description": "브레이크포인트 기반 반응형 동작 구현 및 터치 최적화",
+        "details": "1. useVerticalMenu composable에 반응형 로직 추가:\n```typescript\n// 화면 크기에 따른 자동 drawer 상태 조정\nif (process.client) {\n  const handleResize = () => {\n    if (window.innerWidth < 1024) {\n      // Mobile: overlay mode, closed by default\n      if (state.value.isOpen) {\n        closeDrawer();\n      }\n    } else {\n      // Desktop: persistent mode, open by default\n      if (!state.value.isOpen && !state.value.miniMode) {\n        openDrawer();\n      }\n    }\n  };\n\n  window.addEventListener('resize', handleResize);\n  handleResize(); // Initial check\n}\n```\n\n2. MenuItem.vue에 터치 피드백 추가:\n```vue\n<q-item\n  clickable\n  v-ripple\n  :active=\"isActive\"\n  @click=\"handleClick\"\n>\n```\n\n3. CSS 미디어 쿼리 추가:\n```css\n@media (max-width: 1023px) {\n  .menu-item {\n    min-height: 48px;\n    font-size: 1rem;\n  }\n}\n\n@media (min-width: 1024px) {\n  .menu-item {\n    min-height: 40px;\n  }\n}\n```",
+        "testStrategy": "1. 1024px 이상: persistent drawer 동작 확인\n2. 1024px 미만: overlay drawer 동작 확인\n3. 모바일에서 메뉴 아이템 클릭 후 자동 닫힘 확인\n4. 터치 피드백 (ripple) 동작 확인\n5. 화면 크기 변경 시 drawer 동작 전환 확인\n6. 스와이프 제스처로 drawer 열기/닫기 확인",
+        "priority": "high",
+        "dependencies": [6],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "role 기반 메뉴 필터링 구현",
+        "description": "사용자 역할에 따른 메뉴 아이템 표시/숨김 기능",
+        "details": "1. useVerticalMenu composable 수정:\n```typescript\nimport { useAuthStore } from '~/stores/auth';\n\nconst visibleMenuItems = computed(() => {\n  const authStore = useAuthStore();\n  const userRoles = authStore.user?.roles || [];\n\n  const filterByRole = (items: MenuItem[]): MenuItem[] => {\n    return items.filter(item => {\n      // No role restriction = visible to all\n      if (!item.roles || item.roles.length === 0) {\n        return true;\n      }\n\n      // Check if user has any of the required roles\n      const hasRole = item.roles.some(role => userRoles.includes(role));\n      if (!hasRole) {\n        return false;\n      }\n\n      // Filter children recursively\n      if (item.children) {\n        item.children = filterByRole(item.children);\n      }\n\n      return true;\n    });\n  };\n\n  return filterByRole([...menuItems]);\n});\n```\n\n2. config/menu.ts에 role 기반 메뉴 추가:\n```typescript\n{\n  id: 'admin',\n  label: 'Admin',\n  icon: 'admin_panel_settings',\n  roles: ['admin', 'superadmin'],\n  children: [\n    { id: 'users', label: 'Users', icon: 'people', route: '/admin/users', roles: ['admin'] },\n    { id: 'settings', label: 'Settings', icon: 'settings', route: '/admin/settings', roles: ['superadmin'] },\n  ],\n}\n```",
+        "testStrategy": "1. admin role이 없는 사용자는 admin 메뉴가 보이지 않는지 확인\n2. admin role이 있는 사용자는 admin 메뉴가 보이는지 확인\n3. 중첩된 children도 role 필터링이 적용되는지 확인\n4. role 없는 메뉴 아이템은 모든 사용자에게 보이는지 확인\n5. 로그인/로그아웃 시 메뉴가 동적으로 업데이트되는지 확인",
+        "priority": "medium",
+        "dependencies": [2, 5],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "키보드 네비게이션 및 접근성 개선",
+        "description": "키보드 단축키 지원 및 ARIA 속성 추가",
+        "details": "1. MenuItem.vue에 키보드 이벤트 추가:\n```vue\n<q-item\n  clickable\n  :active=\"isActive\"\n  tabindex=\"0\"\n  role=\"menuitem\"\n  :aria-label=\"t(`menu.${item.id}`)\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space.prevent=\"handleClick\"\n>\n```\n\n2. VerticalMenu.vue에 키보드 네비게이션 추가:\n```vue\n<q-list\n  padding\n  role=\"menu\"\n  aria-label=\"Main navigation\"\n  @keydown.up=\"handleArrowUp\"\n  @keydown.down=\"handleArrowDown\"\n>\n```\n\n3. 키보드 단축키 핸들러:\n```typescript\nconst handleArrowUp = (e: KeyboardEvent) => {\n  e.preventDefault();\n  const currentItem = document.activeElement;\n  const prevItem = currentItem?.previousElementSibling?.querySelector('[tabindex=\"0\"]');\n  if (prevItem) {\n    (prevItem as HTMLElement).focus();\n  }\n};\n\nconst handleArrowDown = (e: KeyboardEvent) => {\n  e.preventDefault();\n  const currentItem = document.activeElement;\n  const nextItem = currentItem?.nextElementSibling?.querySelector('[tabindex=\"0\"]');\n  if (nextItem) {\n    (nextItem as HTMLElement).focus();\n  }\n};\n```\n\n4. 글로벌 키보드 단축키 (composables/useKeyboardShortcuts.ts):\n```typescript\nif (process.client) {\n  document.addEventListener('keydown', (e) => {\n    // Ctrl/Cmd + B: Toggle drawer\n    if ((e.ctrlKey || e.metaKey) && e.key === 'b') {\n      e.preventDefault();\n      toggleDrawer();\n    }\n    \n    // Ctrl/Cmd + M: Toggle mini mode\n    if ((e.ctrlKey || e.metaKey) && e.key === 'm') {\n      e.preventDefault();\n      toggleMiniMode();\n    }\n  });\n}\n```",
+        "testStrategy": "1. Tab 키로 메뉴 아이템 간 이동 확인\n2. Enter/Space 키로 메뉴 아이템 활성화 확인\n3. 화살표 키로 메뉴 네비게이션 확인\n4. Ctrl/Cmd+B로 drawer 토글 확인\n5. Ctrl/Cmd+M로 mini mode 토글 확인\n6. 스크린 리더로 ARIA 속성 읽기 확인\n7. 포커스 표시가 명확한지 확인",
+        "priority": "low",
+        "dependencies": [3, 5],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2026-01-11T06:30:00.000Z",
+      "updated": "2026-01-11T06:30:00.000Z",
+      "description": "Tasks for vertical menu navigation system"
+    }
+  },
   "master": {
     "tasks": [
       {
