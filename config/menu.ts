@@ -5,7 +5,7 @@ export const menuItems: MenuItem[] = [
     id: 'home',
     label: 'Home',
     icon: 'home',
-    route: '/',
+    route: '/dashboard',
   },
   {
     id: 'about',

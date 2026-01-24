@@ -61,16 +61,34 @@ const handleClick = () => {
 
 <style scoped>
 .menu-item {
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  margin: 2px 4px;
+}
+
+.menu-item :deep(.q-icon) {
+  color: #616161;
+  transition: color 0.2s ease;
+}
+
+.menu-item:hover :deep(.q-icon) {
+  color: var(--q-color-primary);
 }
 
 .menu-item--active {
-  background-color: var(--q-color-primary);
-  color: white;
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
 }
 
 .menu-item--active :deep(.q-icon) {
-  color: white;
+  color: #ffeb3b !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.menu-item--active :deep(.q-item__label) {
+  color: white !important;
+  font-weight: 600;
 }
 
 @media (max-width: 1023px) {

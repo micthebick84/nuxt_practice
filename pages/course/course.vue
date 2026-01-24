@@ -1,8 +1,14 @@
-<template>
-  <q-page padding>
-    <h2>Course</h2>
-  </q-page>
-</template>
-<script lang="ts"></script>
+<script setup lang="ts">
+// Course page is disabled - redirect to dashboard
+definePageMeta({
+  middleware: [
+    function () {
+      return navigateTo('/dashboard');
+    },
+  ],
+});
+</script>
 
-<style scoped></style>
+<template>
+  <div></div>
+</template>

@@ -15,8 +15,11 @@
           dense
           round
           icon="menu_open"
+          color="white"
+          text-color="white"
           :title="t('menu.toggleMini')"
           @click="toggleMiniMode"
+          class="toggle-btn"
         />
       </q-item-section>
     </q-item>
@@ -78,7 +81,7 @@
       <q-separator />
 
       <div class="q-pa-sm text-center text-caption text-grey" v-if="!state.miniMode">
-        <div>© 2026 Nuxt Practice</div>
+        <div>© 2026 Hamon</div>
         <div class="text-weight-light">v1.0.0</div>
       </div>
     </div>
@@ -131,6 +134,15 @@ const handleLogout = () => {
 
 .menu-header {
   min-height: 64px;
+}
+
+.toggle-btn {
+  opacity: 0.9;
+}
+
+.toggle-btn:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .menu-footer {
