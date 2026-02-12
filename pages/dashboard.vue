@@ -26,10 +26,8 @@
       <!-- Header -->
       <header class="page-header">
         <div class="header-title">
-          <div class="home-icon">🏠</div>
           <h1>Home</h1>
         </div>
-        <q-btn outline no-caps color="grey-7" label="Edit" />
       </header>
 
       <!-- Content Area -->

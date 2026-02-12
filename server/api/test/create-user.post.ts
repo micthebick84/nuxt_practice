@@ -1,4 +1,4 @@
-import oracleDb from '../../utils/oracleDb';
+import pool from '../../utils/db';
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
@@ -13,18 +13,18 @@ export default defineEventHandler(async (event) => {
 
   try {
     // Insert new user
-    await oracleDb.query(`
-      INSERT INTO COM_USER (
-        USER_ID,
-        USER_NAME,
-        EMAIL,
-        CELL_TEL,
-        PASSWORD,
-        USE_FLAG,
-        PASS_DATE,
-        PASS_CHG_DATE
+    await pool.query(`
+      INSERT INTO com_user (
+        user_id,
+        user_name,
+        email,
+        cell_tel,
+        password,
+        use_flag,
+        pass_date,
+        pass_chg_date
       ) VALUES (
-        :1, :2, :3, :4, :5, 1, SYSTIMESTAMP, SYSTIMESTAMP
+        $1, $2, $3, $4, $5, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
       )
     `, [userId, userName, email, phone, password]);
 

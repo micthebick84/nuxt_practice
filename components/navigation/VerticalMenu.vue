@@ -3,7 +3,11 @@
     <!-- Header -->
     <q-item class="menu-header bg-primary text-white">
       <q-item-section avatar v-if="!state.miniMode">
-        <q-icon name="school" size="md" />
+        <img 
+          src="/images/humetro-logo.png" 
+          alt="Humetro Logo"
+          class="humetro-logo"
+        />
       </q-item-section>
       <q-item-section v-if="!state.miniMode">
         <q-item-label class="text-h6">{{ t('app.name') }}</q-item-label>
@@ -155,5 +159,11 @@ const handleLogout = () => {
 
 .logout-item:hover {
   background-color: rgba(255, 0, 0, 0.05);
+}
+
+.humetro-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
 }
 </style>

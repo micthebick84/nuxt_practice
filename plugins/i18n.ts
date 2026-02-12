@@ -20,8 +20,8 @@ export default defineNuxtPlugin(({ vueApp }) => {
         yes: 'Yes',
         no: 'No',
         app: {
-          name: 'Nuxt Practice',
-          tagline: 'Learning Platform',
+          name: 'Humetro',
+          tagline: 'Busan Metro Transit',
         },
         menu: {
           home: 'Home',
@@ -102,8 +102,8 @@ export default defineNuxtPlugin(({ vueApp }) => {
         yes: '예',
         no: '아니오',
         app: {
-          name: 'Nuxt Practice',
-          tagline: '학습 플랫폼',
+          name: 'Humetro',
+          tagline: '부산 도시철도',
         },
         menu: {
           home: '홈',
