@@ -12,6 +12,32 @@ export interface MenuItem {
   type?: 'language-selector' | 'normal';
 }
 
+// Backend API response types
+export interface BackendMenu {
+  menuNo: number;
+  menuName: string;
+  guid: string | null;
+  menuAuth: string | null;
+  orderNo: number;
+  menuType: string | null; // 'LINK' | 'LAYOUT' | 'WIDGET' | null
+  grpType: string | null;
+}
+
+export interface BackendPageGroup {
+  pageGrpNo: number;
+  pageGrpName: string;
+  orderNo: number;
+  children: BackendMenu[];
+}
+
+export interface BackendPage {
+  pageNo: number;
+  pageName: string;
+  orderNo: number;
+  webIconClass: string | null;
+  children: BackendPageGroup[];
+}
+
 export interface MenuConfig {
   items: MenuItem[];
   miniMode: boolean;

@@ -49,6 +49,7 @@ export default defineNuxtConfig({
     },
     public: {
       apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:8080',
+      siteName: process.env.SITE_NAME || 'Netis v6.6',
       oauth: {
         clientId: process.env.OAUTH_CLIENT_ID || 'nuxt-app',
         authorizationEndpoint: process.env.OAUTH_AUTHORIZATION_ENDPOINT || 'http://localhost:9000/oauth2/authorize',

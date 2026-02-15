@@ -1,7 +1,7 @@
 import { ref, computed, readonly, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import type { MenuItem, MenuState } from '~/types/menu';
-import { menuItems } from '~/config/menu';
+import { useMenuStore } from '~/stores/menu';
 
 const state = ref<MenuState>({
   isOpen: true,
@@ -76,7 +76,11 @@ export const useVerticalMenu = () => {
 
   const navigate = (item: MenuItem) => {
     if (item.route) {
-      router.push(item.route);
+      if (item.external && process.client) {
+        window.open(item.route, '_blank');
+      } else {
+        router.push(item.route);
+      }
       // Auto-close on mobile
       if (process.client && window.innerWidth < 1024) {
         closeDrawer();
@@ -85,9 +89,9 @@ export const useVerticalMenu = () => {
   };
 
   // Getters
+  const menuStore = useMenuStore();
   const visibleMenuItems = computed(() => {
-    // TODO: Filter based on user roles
-    return menuItems;
+    return menuStore.menuItems;
   });
 
   const activeMenuItem = computed(() => {

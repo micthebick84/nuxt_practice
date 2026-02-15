@@ -12,7 +12,7 @@
     </q-item-section>
 
     <q-item-section v-if="!miniMode">
-      <q-item-label>{{ t(`menu.${item.id}`) }}</q-item-label>
+      <q-item-label>{{ item.label }}</q-item-label>
     </q-item-section>
 
     <q-item-section side v-if="item.badge && !miniMode">
@@ -25,14 +25,13 @@
       self="center left"
       :offset="[10, 0]"
     >
-      {{ t(`menu.${item.id}`) }}
+      {{ item.label }}
     </q-tooltip>
   </q-item>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import type { MenuItem as MenuItemType } from '~/types/menu';
 
@@ -45,7 +44,6 @@ const emit = defineEmits<{
   click: [item: MenuItemType];
 }>();
 
-const { t } = useI18n();
 const route = useRoute();
 
 const isActive = computed(() => {

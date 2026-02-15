@@ -2,17 +2,20 @@
   <div class="vertical-menu column no-wrap full-height">
     <!-- Header -->
     <q-item class="menu-header bg-primary text-white">
-      <q-item-section avatar v-if="!state.miniMode">
-        <img 
-          src="/images/humetro-logo.png" 
-          alt="Humetro Logo"
-          class="humetro-logo"
-        />
+      <q-item-section avatar v-if="!state.miniMode" class="menu-logo-section">
+        <div class="row items-center no-wrap">
+          <img
+            src="/images/humetro-logo-new.png"
+            alt="Humetro Logo"
+            class="humetro-logo"
+          />
+          <!-- <span class="logo-text text-white text-weight-bold q-ml-sm">부산교통공사</span> -->
+        </div>
       </q-item-section>
-      <q-item-section v-if="!state.miniMode">
-        <q-item-label class="text-h6">{{ t('app.name') }}</q-item-label>
-        <q-item-label caption class="text-white">{{ t('app.tagline') }}</q-item-label>
-      </q-item-section>
+      <!-- <q-item-section v-if="!state.miniMode"> -->
+        <!-- <q-item-label class="text-h6">{{ t('app.name') }}</q-item-label> -->
+        <!-- <q-item-label caption class="text-white">{{ t('app.tagline') }}</q-item-label> -->
+      <!-- </q-item-section> -->
       <q-item-section side>
         <q-btn
           flat
@@ -162,8 +165,19 @@ const handleLogout = () => {
 }
 
 .humetro-logo {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
+  height: 28px;
+  width: auto;
+  max-width: 120px;
+  object-fit: cover;
+  object-position: left center;
+}
+
+.menu-logo-section {
+  min-width: 0;
+}
+
+.logo-text {
+  font-size: 14px;
+  white-space: nowrap;
 }
 </style>

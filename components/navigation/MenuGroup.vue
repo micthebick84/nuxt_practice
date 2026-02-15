@@ -2,7 +2,7 @@
   <q-expansion-item
     v-model="expanded"
     :icon="group.icon"
-    :label="miniMode ? '' : t(`menu.${group.id}`)"
+    :label="miniMode ? '' : group.label"
     :header-class="miniMode ? 'q-px-sm' : ''"
     class="menu-group"
   >
@@ -15,7 +15,7 @@
         self="center left"
         :offset="[10, 0]"
       >
-        {{ t(`menu.${group.id}`) }}
+        {{ group.label }}
       </q-tooltip>
     </template>
 
@@ -24,6 +24,13 @@
         v-if="child.type === 'language-selector'"
         :mini-mode="miniMode"
         class="q-pl-lg"
+      />
+      <MenuGroup
+        v-else-if="child.children && child.children.length > 0"
+        :group="child"
+        :mini-mode="miniMode"
+        class="q-pl-md"
+        @item-click="handleItemClick"
       />
       <MenuItem
         v-else
@@ -38,7 +45,6 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
 import type { MenuItem as MenuItemType } from '~/types/menu';
 import { useVerticalMenu } from '~/composables/useVerticalMenu';
 import MenuItem from './MenuItem.vue';
@@ -53,7 +59,6 @@ const emit = defineEmits<{
   itemClick: [item: MenuItemType];
 }>();
 
-const { t } = useI18n();
 const { isGroupExpanded, toggleGroup } = useVerticalMenu();
 
 const expanded = ref(isGroupExpanded(props.group.id));

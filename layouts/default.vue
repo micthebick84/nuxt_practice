@@ -32,12 +32,14 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth'
 import { useUserStore } from '~/stores/user'
+import { useMenuStore } from '~/stores/menu'
 import { useVerticalMenu } from '~/composables/useVerticalMenu'
 import { useRoute } from 'vue-router'
 import VerticalMenu from '~/components/navigation/VerticalMenu.vue'
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
+const menuStore = useMenuStore()
 const { state: menuState, openDrawer, closeDrawer } = useVerticalMenu()
 const route = useRoute()
 
@@ -72,12 +74,15 @@ const handleDrawerLeave = () => {
 
 onMounted(async () => {
   authStore.initializeAuth()
-  // Load user profile if authenticated
+  // Load user profile and menus if authenticated
   if (authStore.user?.userId) {
     try {
-      await userStore.fetchProfile(authStore.user.userId)
+      await Promise.all([
+        userStore.fetchProfile(authStore.user.userId),
+        menuStore.fetchMenus(),
+      ])
     } catch (error) {
-      // Profile fetch failed, but continue
+      // Profile/menu fetch failed, but continue
     }
   }
   // Start with drawer closed
