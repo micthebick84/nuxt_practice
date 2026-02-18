@@ -2,7 +2,7 @@ import { useAuthStore } from '~/stores/auth';
 
 export default defineNuxtRouteMiddleware((to) => {
   // List of public pages (accessible without authentication)
-  const publicPages = ['/login', '/signup', '/auth/callback', '/about'];
+  const publicPages = ['/login', '/signup', '/auth/callback', '/about', '/dashboard/traffic'];
   const config = useRuntimeConfig();
 
   // Build OAuth authorization URL
