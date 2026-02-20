@@ -1,6 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
+  devServer: {
+    port: 3000,
+    host: '0.0.0.0', // localhost 외 접근 허용 (같은 PC 내 다른 툴/브라우저 등)
+  },
   typescript: {
     shim: false,
     typeCheck: false,

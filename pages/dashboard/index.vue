@@ -1,99 +1,82 @@
 <template>
-  <div class="traffic-page">
-    <!-- Content Header -->
+  <div class="dashboard-page">
+    <!-- Header -->
     <div class="content-header">
-      <h1 class="page-title">Dashboard</h1>
-      <div class="breadcrumb">
-        <span class="bc-item">Home</span>
-        <ChevronRight :size="14" color="#D1D5DB" />
-        <span class="bc-item active">Dashboard</span>
+      <div class="header-left">
+        <h1 class="page-title">교통 데이터 대시보드</h1>
+        <div class="breadcrumb">
+          <span class="bc-item">Home</span>
+          <ChevronRight :size="14" color="#D1D5DB" />
+          <span class="bc-item active">Dashboard</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="date-range-picker">
+          <input type="date" v-model="startDate" class="date-input" @change="fetchAll" />
+          <span class="date-sep">~</span>
+          <input type="date" v-model="endDate" class="date-input" @change="fetchAll" />
+          <button class="refresh-btn" @click="fetchAll">
+            <RefreshCw :size="14" />
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Header Divider -->
     <div class="header-divider"></div>
 
-    <!-- Action Bar -->
-    <div class="action-bar">
-      <button class="action-btn">
-        <Search :size="14" color="#374151" />
-        <span>Search</span>
-      </button>
-      <button class="action-btn">
-        <SlidersHorizontal :size="14" color="#374151" />
-        <span>Settings</span>
-      </button>
+    <!-- Row 5: Raw Summary Stats Cards (full width) -->
+    <div class="stats-row">
+      <div class="stat-card" v-for="stat in summaryCards" :key="stat.label">
+        <div class="stat-icon" :style="{ background: stat.bg }">
+          <component :is="stat.icon" :size="20" :color="stat.color" />
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ loading.rawSummary ? '...' : stat.value }}</div>
+          <div class="stat-label">{{ stat.label }}</div>
+        </div>
+      </div>
     </div>
 
-    <!-- Widget Grid -->
+    <!-- Charts Grid -->
     <div class="widget-grid">
+
       <!-- Row 1 -->
       <div class="widget-row">
-        <!-- Bar Chart -->
         <div class="widget-card">
           <div class="widget-header">
-            <span class="widget-title">Bar Chart</span>
-            <div class="widget-actions">
-              <button class="widget-action-btn"><RefreshCw :size="14" color="#9CA3AF" /></button>
-              <button class="widget-action-btn"><Maximize2 :size="14" color="#9CA3AF" /></button>
-              <button class="widget-action-btn"><SettingsIcon :size="14" color="#9CA3AF" /></button>
-            </div>
+            <span class="widget-title">일별 거래 현황</span>
           </div>
           <div class="chart-body">
             <ClientOnly>
-              <apexchart
-                v-if="mounted"
-                type="bar"
-                height="200"
-                :options="barChartOptions"
-                :series="barChartSeries"
-              />
+              <div v-if="loading.daily" class="loading-skeleton"></div>
+              <apexchart v-else-if="mounted" type="line" height="200"
+                :options="dailyChartOptions" :series="dailyChartSeries" />
             </ClientOnly>
           </div>
         </div>
 
-        <!-- Pie Chart (Donut) -->
         <div class="widget-card">
           <div class="widget-header">
-            <span class="widget-title">Pie Chart</span>
-            <div class="widget-actions">
-              <button class="widget-action-btn"><RefreshCw :size="14" color="#9CA3AF" /></button>
-              <button class="widget-action-btn"><Maximize2 :size="14" color="#9CA3AF" /></button>
-              <button class="widget-action-btn"><SettingsIcon :size="14" color="#9CA3AF" /></button>
-            </div>
+            <span class="widget-title">요일별 이용 통계</span>
           </div>
-          <div class="chart-body chart-center">
+          <div class="chart-body">
             <ClientOnly>
-              <apexchart
-                v-if="mounted"
-                type="donut"
-                height="200"
-                :options="donutChartOptions"
-                :series="donutChartSeries"
-              />
+              <div v-if="loading.dayOfWeek" class="loading-skeleton"></div>
+              <apexchart v-else-if="mounted" type="bar" height="200"
+                :options="dayOfWeekChartOptions" :series="dayOfWeekChartSeries" />
             </ClientOnly>
           </div>
         </div>
 
-        <!-- Line Chart -->
         <div class="widget-card">
           <div class="widget-header">
-            <span class="widget-title">Line Chart</span>
-            <div class="widget-actions">
-              <button class="widget-action-btn"><RefreshCw :size="14" color="#9CA3AF" /></button>
-              <button class="widget-action-btn"><Maximize2 :size="14" color="#9CA3AF" /></button>
-              <button class="widget-action-btn"><SettingsIcon :size="14" color="#9CA3AF" /></button>
-            </div>
+            <span class="widget-title">시간대별 이용 통계 (피크타임)</span>
           </div>
           <div class="chart-body">
             <ClientOnly>
-              <apexchart
-                v-if="mounted"
-                type="line"
-                height="200"
-                :options="lineChartOptions"
-                :series="lineChartSeries"
-              />
+              <div v-if="loading.hourlyStats" class="loading-skeleton"></div>
+              <apexchart v-else-if="mounted" type="area" height="200"
+                :options="hourlyStatsChartOptions" :series="hourlyStatsChartSeries" />
             </ClientOnly>
           </div>
         </div>
@@ -101,82 +84,130 @@
 
       <!-- Row 2 -->
       <div class="widget-row">
-        <!-- Gauge (RadialBar) -->
         <div class="widget-card">
           <div class="widget-header">
-            <span class="widget-title">Gauge</span>
-            <div class="widget-actions">
-              <button class="widget-action-btn"><RefreshCw :size="14" color="#9CA3AF" /></button>
-              <button class="widget-action-btn"><Maximize2 :size="14" color="#9CA3AF" /></button>
-              <button class="widget-action-btn"><SettingsIcon :size="14" color="#9CA3AF" /></button>
-            </div>
+            <span class="widget-title">호선별 일별 이용 현황</span>
           </div>
-          <div class="chart-body chart-center">
+          <div class="chart-body">
             <ClientOnly>
-              <apexchart
-                v-if="mounted"
-                type="radialBar"
-                height="220"
-                :options="gaugeChartOptions"
-                :series="gaugeChartSeries"
-              />
+              <div v-if="loading.dayLines" class="loading-skeleton"></div>
+              <apexchart v-else-if="mounted" type="bar" height="200"
+                :options="dayLinesChartOptions" :series="dayLinesChartSeries" />
             </ClientOnly>
           </div>
         </div>
 
-        <!-- Table -->
         <div class="widget-card">
           <div class="widget-header">
-            <span class="widget-title">Table</span>
-            <div class="widget-actions">
-              <button class="widget-action-btn"><RefreshCw :size="14" color="#9CA3AF" /></button>
-              <button class="widget-action-btn"><Maximize2 :size="14" color="#9CA3AF" /></button>
-              <button class="widget-action-btn"><SettingsIcon :size="14" color="#9CA3AF" /></button>
-            </div>
+            <span class="widget-title">권종유형별 분석</span>
           </div>
-          <div class="table-body">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Source</th>
-                  <th>Visitors</th>
-                  <th>Rate</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="row in tableData" :key="row.source">
-                  <td class="td-source">{{ row.source }}</td>
-                  <td class="td-visitors">{{ row.visitors }}</td>
-                  <td class="td-rate" :class="{ green: row.highlight }">{{ row.rate }}</td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="chart-body chart-center">
+            <ClientOnly>
+              <div v-if="loading.ticketType" class="loading-skeleton"></div>
+              <apexchart v-else-if="mounted" type="donut" height="200"
+                :options="ticketTypeChartOptions" :series="ticketTypeChartSeries" />
+            </ClientOnly>
           </div>
         </div>
 
-        <!-- Area Chart -->
         <div class="widget-card">
           <div class="widget-header">
-            <span class="widget-title">Area Chart</span>
-            <div class="widget-actions">
-              <button class="widget-action-btn"><RefreshCw :size="14" color="#9CA3AF" /></button>
-              <button class="widget-action-btn"><Maximize2 :size="14" color="#9CA3AF" /></button>
-              <button class="widget-action-btn"><SettingsIcon :size="14" color="#9CA3AF" /></button>
-            </div>
+            <span class="widget-title">카드유형별 이용 현황</span>
           </div>
-          <div class="chart-body">
+          <div class="chart-body chart-center">
             <ClientOnly>
-              <apexchart
-                v-if="mounted"
-                type="area"
-                height="200"
-                :options="areaChartOptions"
-                :series="areaChartSeries"
-              />
+              <div v-if="loading.cardType" class="loading-skeleton"></div>
+              <apexchart v-else-if="mounted" type="donut" height="200"
+                :options="cardTypeChartOptions" :series="cardTypeChartSeries" />
             </ClientOnly>
           </div>
         </div>
       </div>
+
+      <!-- Row 3 -->
+      <div class="widget-row">
+        <div class="widget-card">
+          <div class="widget-header">
+            <span class="widget-title">TOP 10 승차역</span>
+          </div>
+          <div class="chart-body">
+            <ClientOnly>
+              <div v-if="loading.topBoarding" class="loading-skeleton"></div>
+              <apexchart v-else-if="mounted" type="bar" height="200"
+                :options="topBoardingChartOptions" :series="topBoardingChartSeries" />
+            </ClientOnly>
+          </div>
+        </div>
+
+        <div class="widget-card">
+          <div class="widget-header">
+            <span class="widget-title">역별 승하차 불균형 분석</span>
+          </div>
+          <div class="chart-body">
+            <ClientOnly>
+              <div v-if="loading.stationImbalance" class="loading-skeleton"></div>
+              <apexchart v-else-if="mounted" type="bar" height="200"
+                :options="stationImbalanceChartOptions" :series="stationImbalanceChartSeries" />
+            </ClientOnly>
+          </div>
+        </div>
+
+        <div class="widget-card">
+          <div class="widget-header">
+            <span class="widget-title">노선별 효율 분석 (TOP 20)</span>
+          </div>
+          <div class="chart-body">
+            <ClientOnly>
+              <div v-if="loading.routeEfficiency" class="loading-skeleton"></div>
+              <apexchart v-else-if="mounted" type="bar" height="200"
+                :options="routeEfficiencyChartOptions" :series="routeEfficiencyChartSeries" />
+            </ClientOnly>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4 -->
+      <div class="widget-row">
+        <div class="widget-card widget-card--wide">
+          <div class="widget-header">
+            <span class="widget-title">시간대 × 권종 크로스 분석</span>
+          </div>
+          <div class="chart-body">
+            <ClientOnly>
+              <div v-if="loading.hourTicketCross" class="loading-skeleton"></div>
+              <apexchart v-else-if="mounted" type="heatmap" height="200"
+                :options="heatmapChartOptions" :series="heatmapChartSeries" />
+            </ClientOnly>
+          </div>
+        </div>
+
+        <div class="widget-card">
+          <div class="widget-header">
+            <span class="widget-title">호선별 TOP 역</span>
+          </div>
+          <div class="chart-body">
+            <ClientOnly>
+              <div v-if="loading.lineTopStations" class="loading-skeleton"></div>
+              <apexchart v-else-if="mounted" type="bar" height="200"
+                :options="lineTopStationsChartOptions" :series="lineTopStationsChartSeries" />
+            </ClientOnly>
+          </div>
+        </div>
+
+        <div class="widget-card">
+          <div class="widget-header">
+            <span class="widget-title">무임 운임 면제 현황</span>
+          </div>
+          <div class="chart-body">
+            <ClientOnly>
+              <div v-if="loading.freeFare" class="loading-skeleton"></div>
+              <apexchart v-else-if="mounted" type="line" height="200"
+                :options="freeFareChartOptions" :series="freeFareChartSeries" />
+            </ClientOnly>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
@@ -184,269 +215,386 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import {
-  Search,
-  SlidersHorizontal,
   ChevronRight,
   RefreshCw,
-  Maximize2,
-  Settings as SettingsIcon,
+  BarChart2,
+  Calendar,
+  MapPin,
+  TrendingUp,
+  CreditCard,
 } from 'lucide-vue-next';
+import { useAuthStore } from '~/stores/auth';
 
-definePageMeta({
-  layout: 'dashboard',
-});
+definePageMeta({ layout: 'dashboard' });
+
+const authStore = useAuthStore();
 
 const mounted = ref(false);
+const startDate = ref('2025-10-31');
+const endDate = ref('2025-12-31');
 
-onMounted(() => {
-  mounted.value = true;
+// Loading states
+const loading = ref({
+  daily: true,
+  dayOfWeek: true,
+  hourlyStats: true,
+  dayLines: true,
+  ticketType: true,
+  cardType: true,
+  topBoarding: true,
+  stationImbalance: true,
+  routeEfficiency: true,
+  hourTicketCross: true,
+  lineTopStations: true,
+  freeFare: true,
+  rawSummary: true,
 });
 
-// --- Bar Chart ---
-const barChartSeries = ref([
-  {
-    name: 'Visitors',
-    data: [
-      { x: 'Mon', y: 3200, fillColor: '#4CAF50' },
-      { x: 'Tue', y: 4100, fillColor: '#4CAF50' },
-      { x: 'Wed', y: 2800, fillColor: '#4CAF50' },
-      { x: 'Thu', y: 5100, fillColor: '#4CAF50' },
-      { x: 'Fri', y: 4200, fillColor: '#4CAF50' },
-      { x: 'Sat', y: 1800, fillColor: '#E5E7EB' },
-      { x: 'Sun', y: 1200, fillColor: '#E5E7EB' },
-    ],
-  },
+// Raw data refs
+const dailyData = ref<any[]>([]);
+const dayOfWeekData = ref<any[]>([]);
+const hourlyStatsData = ref<any[]>([]);
+const dayLinesData = ref<any[]>([]);
+const ticketTypeData = ref<any[]>([]);
+const cardTypeData = ref<any[]>([]);
+const topBoardingData = ref<any[]>([]);
+const stationImbalanceData = ref<any[]>([]);
+const routeEfficiencyData = ref<any[]>([]);
+const hourTicketCrossData = ref<any[]>([]);
+const lineTopStationsData = ref<any[]>([]);
+const freeFareData = ref<any[]>([]);
+const rawSummaryData = ref<any>({});
+
+const BASE = '/api/proxy/api/transport';
+const params = computed(() => `startDate=${startDate.value}&endDate=${endDate.value}`);
+
+async function fetchAll() {
+  // Reset loading
+  Object.keys(loading.value).forEach(k => (loading.value as any)[k] = true);
+
+  await Promise.allSettled([
+    fetchData(`${BASE}/daily?${params.value}`, dailyData, 'daily'),
+    fetchData(`${BASE}/stats/day-of-week?${params.value}`, dayOfWeekData, 'dayOfWeek'),
+    fetchData(`${BASE}/stats/hourly?${params.value}`, hourlyStatsData, 'hourlyStats'),
+    fetchData(`${BASE}/day-lines?${params.value}`, dayLinesData, 'dayLines'),
+    fetchData(`${BASE}/stats/ticket-type?${params.value}`, ticketTypeData, 'ticketType'),
+    fetchData(`${BASE}/stats/card-type?${params.value}`, cardTypeData, 'cardType'),
+    fetchData(`${BASE}/stats/top-boarding-stations?${params.value}`, topBoardingData, 'topBoarding'),
+    fetchData(`${BASE}/stats/station-imbalance?${params.value}`, stationImbalanceData, 'stationImbalance'),
+    fetchData(`${BASE}/stats/route-efficiency?${params.value}`, routeEfficiencyData, 'routeEfficiency'),
+    fetchData(`${BASE}/stats/hour-ticket-cross?${params.value}`, hourTicketCrossData, 'hourTicketCross'),
+    fetchData(`${BASE}/lines/top-stations?${params.value}`, lineTopStationsData, 'lineTopStations'),
+    fetchData(`${BASE}/stats/free-fare?${params.value}`, freeFareData, 'freeFare'),
+    fetchDataSingle(`${BASE}/stats/raw-summary?${params.value}`, rawSummaryData, 'rawSummary'),
+  ]);
+}
+
+function authHeaders() {
+  const token = authStore.accessToken;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function fetchData(url: string, dataRef: any, loadingKey: string) {
+  try {
+    const res: any = await $fetch(url, { headers: authHeaders() });
+    dataRef.value = res?.data ?? res ?? [];
+  } catch (e) {
+    dataRef.value = [];
+  } finally {
+    (loading.value as any)[loadingKey] = false;
+  }
+}
+
+async function fetchDataSingle(url: string, dataRef: any, loadingKey: string) {
+  try {
+    const res: any = await $fetch(url, { headers: authHeaders() });
+    dataRef.value = res?.data ?? res ?? {};
+  } catch (e) {
+    dataRef.value = {};
+  } finally {
+    (loading.value as any)[loadingKey] = false;
+  }
+}
+
+onMounted(async () => {
+  mounted.value = true;
+  await fetchAll();
+});
+
+// --- Summary Cards ---
+const summaryCards = computed(() => [
+  { label: '총 거래건수', value: rawSummaryData.value?.totalCnt?.toLocaleString() ?? '-', icon: BarChart2, color: '#4CAF50', bg: '#E8F5E9' },
+  { label: '거래 일수', value: rawSummaryData.value?.tradeDateCnt?.toLocaleString() ?? '-', icon: Calendar, color: '#2196F3', bg: '#E3F2FD' },
+  { label: '이용 역수', value: rawSummaryData.value?.stationCnt?.toLocaleString() ?? '-', icon: MapPin, color: '#FF9800', bg: '#FFF3E0' },
+  { label: '이용 노선수', value: rawSummaryData.value?.routeCnt?.toLocaleString() ?? '-', icon: TrendingUp, color: '#9C27B0', bg: '#F3E5F5' },
+  { label: '이용 카드수', value: rawSummaryData.value?.cardCnt?.toLocaleString() ?? '-', icon: CreditCard, color: '#F44336', bg: '#FFEBEE' },
 ]);
 
-const barChartOptions = computed(() => ({
-  chart: {
-    type: 'bar',
-    toolbar: { show: false },
-    background: 'transparent',
-  },
-  colors: ['#4CAF50'],
-  plotOptions: {
-    bar: {
-      borderRadius: 4,
-      columnWidth: '55%',
-      distributed: false,
-    },
-  },
+// Common chart options
+const commonOptions = {
+  chart: { toolbar: { show: false }, background: 'transparent' },
   dataLabels: { enabled: false },
+  grid: { borderColor: '#F3F4F6', yaxis: { lines: { show: true } }, xaxis: { lines: { show: false } } },
+  tooltip: { theme: 'light' },
+};
+
+const axisLabelStyle = { style: { colors: '#9CA3AF', fontSize: '9px', fontWeight: 500 } };
+
+// --- Daily Chart ---
+const dailyChartSeries = computed(() => [{
+  name: '총거래건수',
+  data: dailyData.value.map((d: any) => d.totalCnt ?? 0),
+}]);
+const dailyChartOptions = computed(() => ({
+  ...commonOptions,
+  colors: ['#4CAF50'],
+  stroke: { width: 2, curve: 'smooth' },
+  markers: { size: 4, colors: ['#4CAF50'], strokeColors: '#4CAF50', strokeWidth: 0 },
   xaxis: {
-    labels: { style: { colors: '#9CA3AF', fontSize: '10px', fontWeight: 500 } },
+    categories: dailyData.value.map((d: any) => d.tradeDt ?? ''),
+    labels: axisLabelStyle,
+    axisBorder: { color: '#E5E7EB' },
+    axisTicks: { show: false },
+  },
+  yaxis: { labels: { ...axisLabelStyle, formatter: (v: number) => v >= 1000 ? (v / 1000).toFixed(0) + 'K' : String(v) } },
+}));
+
+// --- Day of Week Chart ---
+const DOW_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
+const dayOfWeekChartSeries = computed(() => [{
+  name: '평균 이용건수',
+  data: dayOfWeekData.value.map((d: any) => ({
+    x: DOW_LABELS[(d.dayOfWeekNum ?? 1) - 1] ?? String(d.dayOfWeekNum),
+    y: d.avgTotalCnt ?? 0,
+    fillColor: (d.dayOfWeekNum === 1 || d.dayOfWeekNum === 7) ? '#E5E7EB' : '#4CAF50',
+  })),
+}]);
+const dayOfWeekChartOptions = computed(() => ({
+  ...commonOptions,
+  colors: ['#4CAF50'],
+  plotOptions: { bar: { borderRadius: 4, columnWidth: '55%', distributed: false } },
+  xaxis: { labels: axisLabelStyle, axisBorder: { show: false }, axisTicks: { show: false } },
+  yaxis: { show: false },
+}));
+
+// --- Hourly Stats Chart ---
+const hourlyStatsChartSeries = computed(() => [{
+  name: '총 이용건수',
+  data: hourlyStatsData.value.map((d: any) => d.totalCnt ?? 0),
+}]);
+const hourlyStatsChartOptions = computed(() => ({
+  ...commonOptions,
+  colors: ['#4CAF50'],
+  stroke: { width: 2, curve: 'smooth' },
+  fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.2, opacityTo: 0.02, stops: [0, 90, 100] } },
+  xaxis: {
+    categories: hourlyStatsData.value.map((d: any) => `${d.hourRange}시`),
+    labels: axisLabelStyle,
+    axisBorder: { color: '#E5E7EB' },
+    axisTicks: { show: false },
+  },
+  yaxis: { labels: { ...axisLabelStyle, formatter: (v: number) => v >= 1000 ? (v / 1000).toFixed(0) + 'K' : String(v) } },
+}));
+
+// --- Day Lines Chart (grouped by line) ---
+const dayLinesChartSeries = computed(() => {
+  const lineNos = [...new Set(dayLinesData.value.map((d: any) => d.lineNo))].sort();
+  const dates = [...new Set(dayLinesData.value.map((d: any) => d.tradeDt))].sort();
+  const lineColors = ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0'];
+  return lineNos.map((line, i) => ({
+    name: `${line}호선`,
+    data: dates.map(dt => {
+      const row = dayLinesData.value.find((d: any) => d.lineNo === line && d.tradeDt === dt);
+      return row?.totalCnt ?? 0;
+    }),
+    color: lineColors[i % lineColors.length],
+  }));
+});
+const dayLinesChartOptions = computed(() => {
+  const dates = [...new Set(dayLinesData.value.map((d: any) => d.tradeDt))].sort();
+  return {
+    ...commonOptions,
+    chart: { ...commonOptions.chart, stacked: false },
+    plotOptions: { bar: { columnWidth: '60%', borderRadius: 2 } },
+    xaxis: { categories: dates, labels: axisLabelStyle, axisBorder: { show: false }, axisTicks: { show: false } },
+    yaxis: { show: false },
+    legend: { show: true, fontSize: '9px', position: 'top' },
+  };
+});
+
+// --- Ticket Type Donut ---
+const ticketTypeChartSeries = computed(() => ticketTypeData.value.map((d: any) => d.totalCnt ?? 0));
+const ticketTypeChartOptions = computed(() => ({
+  ...commonOptions,
+  colors: ['#4CAF50', '#81C784', '#C8E6C9', '#E8F5E9'],
+  labels: ticketTypeData.value.map((d: any) => d.ticketType ?? ''),
+  plotOptions: { pie: { donut: { size: '58%', labels: { show: true, total: { show: true, fontSize: '14px', fontWeight: 600, color: '#374151', formatter: () => ticketTypeData.value.length + '종' } } } } },
+  legend: { show: true, fontSize: '9px', position: 'bottom' },
+  stroke: { show: false },
+}));
+
+// --- Card Type Donut ---
+const cardTypeChartSeries = computed(() => cardTypeData.value.map((d: any) => d.totalCnt ?? 0));
+const cardTypeChartOptions = computed(() => ({
+  ...commonOptions,
+  colors: ['#2196F3', '#64B5F6', '#BBDEFB', '#90CAF9', '#42A5F5'],
+  labels: cardTypeData.value.map((d: any) => d.cardType ?? ''),
+  plotOptions: { pie: { donut: { size: '58%', labels: { show: true, total: { show: true, fontSize: '14px', fontWeight: 600, color: '#374151', formatter: () => cardTypeData.value.length + '종' } } } } },
+  legend: { show: true, fontSize: '9px', position: 'bottom' },
+  stroke: { show: false },
+}));
+
+// --- Top Boarding Stations (horizontal bar) ---
+const topBoardingChartSeries = computed(() => [{
+  name: '총 승차건수',
+  data: topBoardingData.value.map((d: any) => d.totalBoardingCnt ?? 0),
+}]);
+const topBoardingChartOptions = computed(() => ({
+  ...commonOptions,
+  colors: ['#4CAF50'],
+  plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '60%' } },
+  xaxis: {
+    categories: topBoardingData.value.map((d: any) => d.boardingStationNo ?? ''),
+    labels: axisLabelStyle,
+  },
+  yaxis: { labels: { style: { colors: '#9CA3AF', fontSize: '9px' } } },
+}));
+
+// --- Station Imbalance ---
+const stationImbalanceChartSeries = computed(() => [
+  { name: '승차', data: stationImbalanceData.value.map((d: any) => d.totalBoardingCnt ?? 0) },
+  { name: '하차', data: stationImbalanceData.value.map((d: any) => d.totalAlightingCnt ?? 0) },
+]);
+const stationImbalanceChartOptions = computed(() => ({
+  ...commonOptions,
+  colors: ['#4CAF50', '#F44336'],
+  plotOptions: { bar: { columnWidth: '60%', borderRadius: 2 } },
+  xaxis: {
+    categories: stationImbalanceData.value.map((d: any) => d.stationNo ?? ''),
+    labels: axisLabelStyle,
     axisBorder: { show: false },
     axisTicks: { show: false },
   },
   yaxis: { show: false },
-  grid: { show: false },
-  tooltip: { theme: 'light' },
+  legend: { show: true, fontSize: '9px', position: 'top' },
+}));
+
+// --- Route Efficiency (horizontal bar) ---
+const routeEfficiencyChartSeries = computed(() => [{
+  name: '총 이용건수',
+  data: routeEfficiencyData.value.map((d: any) => d.totalCnt ?? 0),
+}]);
+const routeEfficiencyChartOptions = computed(() => ({
+  ...commonOptions,
+  colors: ['#FF9800'],
+  plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '55%' } },
+  xaxis: {
+    categories: routeEfficiencyData.value.map((d: any) => d.routeNo ?? ''),
+    labels: axisLabelStyle,
+  },
+  yaxis: { labels: { style: { colors: '#9CA3AF', fontSize: '8px' } } },
+}));
+
+// --- Heatmap (Hour x Ticket Type) ---
+const heatmapChartSeries = computed(() => {
+  const ticketTypes = [...new Set(hourTicketCrossData.value.map((d: any) => d.ticketType))];
+  return ticketTypes.map(tt => ({
+    name: tt,
+    data: Array.from({ length: 24 }, (_, h) => {
+      const row = hourTicketCrossData.value.find((d: any) => d.ticketType === tt && d.hourRange === h);
+      return { x: `${h}시`, y: row?.boardingCnt ?? 0 };
+    }),
+  }));
+});
+const heatmapChartOptions = computed(() => ({
+  ...commonOptions,
+  colors: ['#4CAF50'],
+  plotOptions: {
+    heatmap: {
+      shadeIntensity: 0.5,
+      colorScale: {
+        ranges: [
+          { from: 0, to: 0, color: '#F3F4F6', name: '없음' },
+          { from: 1, to: 10000, color: '#C8E6C9', name: '낮음' },
+          { from: 10001, to: 50000, color: '#81C784', name: '보통' },
+          { from: 50001, to: 200000, color: '#4CAF50', name: '높음' },
+          { from: 200001, to: 9999999, color: '#1B5E20', name: '매우 높음' },
+        ],
+      },
+    },
+  },
+  xaxis: { labels: axisLabelStyle },
   legend: { show: false },
 }));
 
-// --- Donut Chart ---
-const donutChartSeries = ref([42, 28, 30]);
 
-const donutChartOptions = computed(() => ({
-  chart: {
-    type: 'donut',
-    background: 'transparent',
-  },
-  colors: ['#4CAF50', '#81C784', '#E5E7EB'],
-  plotOptions: {
-    pie: {
-      donut: {
-        size: '58%',
-        labels: {
-          show: true,
-          name: { show: false },
-          value: { show: false },
-          total: {
-            show: true,
-            label: '68%',
-            fontSize: '18px',
-            fontWeight: 600,
-            fontFamily: 'JetBrains Mono, monospace',
-            color: '#374151',
-            formatter: () => '68%',
-          },
-        },
-      },
-    },
-  },
-  dataLabels: { enabled: false },
-  legend: { show: false },
-  stroke: { show: false },
-  tooltip: { enabled: false },
+
+// --- Line Top Stations ---
+const lineTopStationsChartSeries = computed(() => {
+  const lineNos = [...new Set(lineTopStationsData.value.map((d: any) => d.lineNo))].sort();
+  const lineColors = ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0'];
+  return lineNos.map((line, i) => ({
+    name: `${line}호선`,
+    data: lineTopStationsData.value
+      .filter((d: any) => d.lineNo === line)
+      .map((d: any) => ({ x: d.stationNo ?? '', y: d.totalCnt ?? 0 })),
+    color: lineColors[i % lineColors.length],
+  }));
+});
+const lineTopStationsChartOptions = computed(() => ({
+  ...commonOptions,
+  plotOptions: { bar: { columnWidth: '55%', borderRadius: 2 } },
+  xaxis: { labels: { style: { colors: '#9CA3AF', fontSize: '8px' } }, axisBorder: { show: false }, axisTicks: { show: false } },
+  yaxis: { show: false },
+  legend: { show: true, fontSize: '9px', position: 'top' },
 }));
 
-// --- Line Chart ---
-const lineChartSeries = ref([
-  {
-    name: 'Users',
-    data: [120, 280, 350, 250, 420, 450],
-  },
+// --- Free Fare Line Chart ---
+const freeFareChartSeries = computed(() => [
+  { name: '유료', data: freeFareData.value.map((d: any) => d.paidCnt ?? 0) },
+  { name: '무임', data: freeFareData.value.map((d: any) => d.freeCnt ?? 0) },
 ]);
-
-const lineChartOptions = computed(() => ({
-  chart: {
-    type: 'line',
-    toolbar: { show: false },
-    background: 'transparent',
-  },
-  colors: ['#4CAF50'],
+const freeFareChartOptions = computed(() => ({
+  ...commonOptions,
+  colors: ['#4CAF50', '#F44336'],
   stroke: { width: 2, curve: 'smooth' },
-  markers: {
-    size: 4,
-    colors: ['#4CAF50'],
-    strokeColors: '#4CAF50',
-    strokeWidth: 0,
-  },
-  dataLabels: { enabled: false },
+  markers: { size: 4 },
   xaxis: {
-    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    labels: { style: { colors: '#9CA3AF', fontSize: '9px', fontWeight: 500 } },
+    categories: freeFareData.value.map((d: any) => d.tradeDt ?? ''),
+    labels: axisLabelStyle,
     axisBorder: { color: '#E5E7EB' },
     axisTicks: { show: false },
   },
-  yaxis: {
-    labels: {
-      style: { colors: '#9CA3AF', fontSize: '9px' },
-      formatter: (val: number) => val.toString(),
-    },
-  },
-  grid: {
-    borderColor: '#F3F4F6',
-    strokeDashArray: 0,
-    yaxis: { lines: { show: true } },
-    xaxis: { lines: { show: false } },
-  },
-  tooltip: { theme: 'light' },
-}));
-
-// --- Gauge (Radial Bar) ---
-const gaugeChartSeries = ref([75]);
-
-const gaugeChartOptions = computed(() => ({
-  chart: {
-    type: 'radialBar',
-    background: 'transparent',
-  },
-  colors: ['#4CAF50'],
-  plotOptions: {
-    radialBar: {
-      startAngle: -180,
-      endAngle: 0,
-      hollow: { size: '60%' },
-      track: {
-        background: '#E5E7EB',
-        strokeWidth: '100%',
-        startAngle: -180,
-        endAngle: 0,
-      },
-      dataLabels: {
-        name: {
-          show: true,
-          fontSize: '11px',
-          color: '#9CA3AF',
-          offsetY: 20,
-          fontFamily: 'Inter, sans-serif',
-        },
-        value: {
-          show: true,
-          fontSize: '28px',
-          fontWeight: 600,
-          color: '#374151',
-          offsetY: -10,
-          fontFamily: 'JetBrains Mono, monospace',
-        },
-      },
-    },
-  },
-  labels: ['Performance'],
-  stroke: { lineCap: 'butt' },
-}));
-
-// --- Table Data ---
-const tableData = ref([
-  { source: 'Google', visitors: '4,521', rate: '42.3%', highlight: true },
-  { source: 'Direct', visitors: '2,108', rate: '28.1%', highlight: false },
-  { source: 'Twitter', visitors: '1,432', rate: '15.7%', highlight: false },
-  { source: 'GitHub', visitors: '987', rate: '13.9%', highlight: false },
-]);
-
-// --- Area Chart ---
-const areaChartSeries = ref([
-  {
-    name: 'Page Views',
-    data: [4500, 5200, 4800, 6200, 7100, 8400],
-  },
-]);
-
-const areaChartOptions = computed(() => ({
-  chart: {
-    type: 'area',
-    toolbar: { show: false },
-    background: 'transparent',
-  },
-  colors: ['#4CAF50'],
-  stroke: { width: 2, curve: 'smooth' },
-  fill: {
-    type: 'gradient',
-    gradient: {
-      shadeIntensity: 1,
-      opacityFrom: 0.2,
-      opacityTo: 0.02,
-      stops: [0, 90, 100],
-    },
-  },
-  dataLabels: { enabled: false },
-  xaxis: {
-    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    labels: { style: { colors: '#9CA3AF', fontSize: '9px', fontWeight: 500 } },
-    axisBorder: { color: '#E5E7EB' },
-    axisTicks: { show: false },
-  },
-  yaxis: {
-    labels: {
-      style: { colors: '#9CA3AF', fontSize: '9px' },
-      formatter: (val: number) => {
-        if (val >= 1000) return (val / 1000).toFixed(0) + 'K';
-        return val.toString();
-      },
-    },
-  },
-  grid: {
-    borderColor: '#F3F4F6',
-    strokeDashArray: 0,
-    yaxis: { lines: { show: true } },
-    xaxis: { lines: { show: false } },
-  },
-  tooltip: { theme: 'light' },
+  yaxis: { labels: { ...axisLabelStyle, formatter: (v: number) => v >= 1000 ? (v / 1000).toFixed(0) + 'K' : String(v) } },
+  legend: { show: true, fontSize: '9px', position: 'top' },
 }));
 </script>
 
 <style scoped>
-.traffic-page {
+.dashboard-page {
   padding: 24px 32px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   height: 100vh;
   overflow-y: auto;
 }
 
-/* Content Header */
 .content-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 48px;
   flex-shrink: 0;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .page-title {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
   color: #111827;
   margin: 0;
@@ -456,75 +604,109 @@ const areaChartOptions = computed(() => ({
 .breadcrumb {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.bc-item {
-  font-size: 13px;
-  color: #9CA3AF;
-}
-
-.bc-item.active {
-  color: #4CAF50;
-  font-weight: 500;
-}
-
-/* Divider */
-.header-divider {
-  height: 1px;
-  background: #E5E7EB;
-  flex-shrink: 0;
-}
-
-/* Action Bar */
-.action-bar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  height: 36px;
-  flex-shrink: 0;
-}
-
-.action-btn {
-  display: flex;
-  align-items: center;
   gap: 6px;
-  padding: 0 12px;
+}
+
+.bc-item { font-size: 12px; color: #9CA3AF; }
+.bc-item.active { color: #4CAF50; font-weight: 500; }
+
+.header-right { display: flex; align-items: center; }
+
+.date-range-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-input {
   height: 32px;
+  padding: 0 10px;
   border: 1px solid #E5E7EB;
-  background: #ffffff;
   border-radius: 6px;
+  font-size: 12px;
   color: #374151;
-  font-size: 13px;
+  background: #fff;
   cursor: pointer;
-  font-family: 'Inter', sans-serif;
+}
+
+.date-input:focus { outline: none; border-color: #4CAF50; }
+
+.date-sep { color: #9CA3AF; font-size: 13px; }
+
+.refresh-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #E5E7EB;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #374151;
   transition: background 0.15s;
 }
+.refresh-btn:hover { background: #F9FAFB; }
 
-.action-btn:hover {
-  background: #F9FAFB;
+.header-divider { height: 1px; background: #E5E7EB; flex-shrink: 0; }
+
+/* Summary stats row */
+.stats-row {
+  display: flex;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.stat-card {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #9CA3AF;
+  margin-top: 2px;
 }
 
 /* Widget Grid */
 .widget-grid {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  flex: 1;
-  min-height: 0;
+  gap: 16px;
 }
 
 .widget-row {
   display: flex;
-  gap: 20px;
-  flex: 1;
-  min-height: 0;
+  gap: 16px;
 }
 
 .widget-card {
   flex: 1;
-  background: #FFFFFF;
+  background: #fff;
   border: 1px solid #E5E7EB;
   border-radius: 8px;
   display: flex;
@@ -533,49 +715,29 @@ const areaChartOptions = computed(() => ({
   min-width: 0;
 }
 
-/* Widget Header */
+.widget-card--wide {
+  flex: 2;
+}
+
 .widget-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  height: 48px;
+  height: 44px;
   flex-shrink: 0;
   border-bottom: 1px solid #F3F4F6;
 }
 
 .widget-title {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: #374151;
 }
 
-.widget-actions {
-  display: flex;
-  gap: 4px;
-}
-
-.widget-action-btn {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: none;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background 0.15s;
-}
-
-.widget-action-btn:hover {
-  background: #F3F4F6;
-}
-
-/* Chart Body */
 .chart-body {
   flex: 1;
-  padding: 16px;
+  padding: 8px 16px 12px;
   min-height: 0;
 }
 
@@ -585,90 +747,30 @@ const areaChartOptions = computed(() => ({
   justify-content: center;
 }
 
-/* Table */
-.table-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.data-table {
+.loading-skeleton {
   width: 100%;
-  border-collapse: collapse;
+  height: 200px;
+  background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
 }
 
-.data-table thead tr {
-  background: #F9FAFB;
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-.data-table th {
-  text-align: left;
-  padding: 0 16px;
-  height: 36px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #9CA3AF;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid #F3F4F6;
-}
-
-.data-table td {
-  padding: 0 16px;
-  height: 36px;
-  font-size: 12px;
-  border-bottom: 1px solid #F3F4F6;
-}
-
-.data-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.td-source {
-  color: #374151;
-  font-weight: 500;
-  font-family: 'Inter', sans-serif;
-}
-
-.td-visitors {
-  color: #374151;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.td-rate {
-  color: #374151;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.td-rate.green {
-  color: #4CAF50;
-  font-weight: 500;
-}
-
-/* Responsive */
 @media (max-width: 1200px) {
-  .widget-row {
-    flex-wrap: wrap;
-  }
-  .widget-card {
-    min-width: calc(50% - 10px);
-  }
+  .widget-row { flex-wrap: wrap; }
+  .widget-card { min-width: calc(50% - 8px); }
+  .stats-row { flex-wrap: wrap; }
+  .stat-card { min-width: calc(50% - 8px); }
 }
 
 @media (max-width: 768px) {
-  .traffic-page {
-    padding: 16px;
-  }
-  .widget-row {
-    flex-direction: column;
-  }
-  .widget-card {
-    min-width: 100%;
-  }
-  .content-header {
-    flex-direction: column;
-    align-items: flex-start;
-    height: auto;
-    gap: 8px;
-  }
+  .dashboard-page { padding: 16px; }
+  .widget-row, .stats-row { flex-direction: column; }
+  .content-header { flex-direction: column; align-items: flex-start; gap: 12px; }
 }
 </style>
