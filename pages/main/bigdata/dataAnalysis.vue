@@ -1,22 +1,20 @@
 <template>
   <div class="menu-page">
     <div class="content-header">
-      <h1 class="page-title">장애처리</h1>
+      <h1 class="page-title">빅데이터분석</h1>
       <div class="breadcrumb">
         <NuxtLink to="/dashboard" class="bc-item bc-link">Home</NuxtLink>
         <ChevronRight :size="14" color="#D1D5DB" />
-        <span class="bc-item">종합현황</span>
+        <span class="bc-item">빅데이터</span>
         <ChevronRight :size="14" color="#D1D5DB" />
-        <span class="bc-item">운영게시판</span>
-        <ChevronRight :size="14" color="#D1D5DB" />
-        <span class="bc-item active">장애처리</span>
+        <span class="bc-item active">빅데이터분석</span>
       </div>
     </div>
     <div class="header-divider"></div>
     <div class="content-placeholder">
       <div class="placeholder-card">
         <FileText :size="48" color="#9CA3AF" />
-        <h2>장애처리</h2>
+        <h2>빅데이터분석</h2>
         <p>This page is under construction.</p>
       </div>
     </div>

@@ -1,22 +1,22 @@
 <template>
   <div class="menu-page">
     <div class="content-header">
-      <h1 class="page-title">트래픽현황</h1>
+      <h1 class="page-title">데이터유형관리</h1>
       <div class="breadcrumb">
         <NuxtLink to="/dashboard" class="bc-item bc-link">Home</NuxtLink>
         <ChevronRight :size="14" color="#D1D5DB" />
-        <span class="bc-item">트래픽</span>
+        <span class="bc-item">빅데이터</span>
         <ChevronRight :size="14" color="#D1D5DB" />
-        <span class="bc-item">트래픽관리</span>
+        <span class="bc-item">데이터현황</span>
         <ChevronRight :size="14" color="#D1D5DB" />
-        <span class="bc-item active">트래픽현황</span>
+        <span class="bc-item active">데이터유형관리</span>
       </div>
     </div>
     <div class="header-divider"></div>
     <div class="content-placeholder">
       <div class="placeholder-card">
         <FileText :size="48" color="#9CA3AF" />
-        <h2>트래픽현황</h2>
+        <h2>데이터유형관리</h2>
         <p>This page is under construction.</p>
       </div>
     </div>
