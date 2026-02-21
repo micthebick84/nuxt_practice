@@ -44,6 +44,7 @@
     "gridstack": "^12.4.2",
     "highcharts": "^12.5.0",
     "highcharts-vue": "^2.0.1",
+    "jquery": "^3.7.1",
     "jqwidgets-scripts": "^23.1.0",
     "lucide-vue-next": "^0.460.0",
     "oracledb": "^6.10.0",
