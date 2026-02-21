@@ -1,6 +1,14 @@
-import { defineEventHandler, getHeader, createError } from 'h3';
+import { defineEventHandler, getHeader, createError, setCookie } from 'h3';
 
 export default defineEventHandler(async (event) => {
+  // Clear httpOnly auth session cookie
+  setCookie(event, 'auth_session', '', {
+    httpOnly: true,
+    secure: false,
+    path: '/',
+    maxAge: 0,
+  });
+
   const authHeader = getHeader(event, 'authorization');
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

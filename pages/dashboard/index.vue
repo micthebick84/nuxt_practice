@@ -26,12 +26,21 @@
 
     <!-- Row 5: Raw Summary Stats Cards (full width) -->
     <div class="stats-row">
-      <div class="stat-card" v-for="stat in summaryCards" :key="stat.label">
+      <div
+        class="stat-card"
+        v-for="(stat, idx) in summaryCards"
+        :key="stat.label"
+        :class="{ 'stat-card--loaded': !loading.rawSummary }"
+        :style="{ transitionDelay: `${idx * 60}ms` }"
+      >
         <div class="stat-icon" :style="{ background: stat.bg }">
           <component :is="stat.icon" :size="20" :color="stat.color" />
         </div>
         <div class="stat-info">
-          <div class="stat-value">{{ loading.rawSummary ? '...' : stat.value }}</div>
+          <div class="stat-value">
+            <span v-if="loading.rawSummary" class="stat-skeleton"></span>
+            <span v-else>{{ stat.value }}</span>
+          </div>
           <div class="stat-label">{{ stat.label }}</div>
         </div>
       </div>
@@ -42,41 +51,47 @@
 
       <!-- Row 1 -->
       <div class="widget-row">
-        <div class="widget-card">
+        <div class="widget-card widget-card--animate" :style="{ animationDelay: '0ms' }">
           <div class="widget-header">
             <span class="widget-title">일별 거래 현황</span>
           </div>
           <div class="chart-body">
             <ClientOnly>
-              <div v-if="loading.daily" class="loading-skeleton"></div>
-              <apexchart v-else-if="mounted" type="line" height="200"
-                :options="dailyChartOptions" :series="dailyChartSeries" />
+              <Transition name="chart-fade" mode="out-in">
+                <div v-if="loading.daily" key="skeleton" class="loading-skeleton"></div>
+                <apexchart v-else-if="mounted" key="chart" type="line" height="200"
+                  :options="dailyChartOptions" :series="dailyChartSeries" />
+              </Transition>
             </ClientOnly>
           </div>
         </div>
 
-        <div class="widget-card">
+        <div class="widget-card widget-card--animate" :style="{ animationDelay: '50ms' }">
           <div class="widget-header">
             <span class="widget-title">요일별 이용 통계</span>
           </div>
           <div class="chart-body">
             <ClientOnly>
-              <div v-if="loading.dayOfWeek" class="loading-skeleton"></div>
-              <apexchart v-else-if="mounted" type="bar" height="200"
-                :options="dayOfWeekChartOptions" :series="dayOfWeekChartSeries" />
+              <Transition name="chart-fade" mode="out-in">
+                <div v-if="loading.dayOfWeek" key="skeleton" class="loading-skeleton"></div>
+                <apexchart v-else-if="mounted" key="chart" type="bar" height="200"
+                  :options="dayOfWeekChartOptions" :series="dayOfWeekChartSeries" />
+              </Transition>
             </ClientOnly>
           </div>
         </div>
 
-        <div class="widget-card">
+        <div class="widget-card widget-card--animate" :style="{ animationDelay: '100ms' }">
           <div class="widget-header">
             <span class="widget-title">시간대별 이용 통계 (피크타임)</span>
           </div>
           <div class="chart-body">
             <ClientOnly>
-              <div v-if="loading.hourlyStats" class="loading-skeleton"></div>
-              <apexchart v-else-if="mounted" type="area" height="200"
-                :options="hourlyStatsChartOptions" :series="hourlyStatsChartSeries" />
+              <Transition name="chart-fade" mode="out-in">
+                <div v-if="loading.hourlyStats" key="skeleton" class="loading-skeleton"></div>
+                <apexchart v-else-if="mounted" key="chart" type="area" height="200"
+                  :options="hourlyStatsChartOptions" :series="hourlyStatsChartSeries" />
+              </Transition>
             </ClientOnly>
           </div>
         </div>
@@ -84,41 +99,47 @@
 
       <!-- Row 2 -->
       <div class="widget-row">
-        <div class="widget-card">
+        <div class="widget-card widget-card--animate" :style="{ animationDelay: '150ms' }">
           <div class="widget-header">
             <span class="widget-title">호선별 일별 이용 현황</span>
           </div>
           <div class="chart-body">
             <ClientOnly>
-              <div v-if="loading.dayLines" class="loading-skeleton"></div>
-              <apexchart v-else-if="mounted" type="bar" height="200"
-                :options="dayLinesChartOptions" :series="dayLinesChartSeries" />
+              <Transition name="chart-fade" mode="out-in">
+                <div v-if="loading.dayLines" key="skeleton" class="loading-skeleton"></div>
+                <apexchart v-else-if="mounted" key="chart" type="bar" height="200"
+                  :options="dayLinesChartOptions" :series="dayLinesChartSeries" />
+              </Transition>
             </ClientOnly>
           </div>
         </div>
 
-        <div class="widget-card">
+        <div class="widget-card widget-card--animate" :style="{ animationDelay: '200ms' }">
           <div class="widget-header">
             <span class="widget-title">권종유형별 분석</span>
           </div>
           <div class="chart-body chart-center">
             <ClientOnly>
-              <div v-if="loading.ticketType" class="loading-skeleton"></div>
-              <apexchart v-else-if="mounted" type="donut" height="200"
-                :options="ticketTypeChartOptions" :series="ticketTypeChartSeries" />
+              <Transition name="chart-fade" mode="out-in">
+                <div v-if="loading.ticketType" key="skeleton" class="loading-skeleton"></div>
+                <apexchart v-else-if="mounted" key="chart" type="donut" height="200"
+                  :options="ticketTypeChartOptions" :series="ticketTypeChartSeries" />
+              </Transition>
             </ClientOnly>
           </div>
         </div>
 
-        <div class="widget-card">
+        <div class="widget-card widget-card--animate" :style="{ animationDelay: '250ms' }">
           <div class="widget-header">
             <span class="widget-title">카드유형별 이용 현황</span>
           </div>
           <div class="chart-body chart-center">
             <ClientOnly>
-              <div v-if="loading.cardType" class="loading-skeleton"></div>
-              <apexchart v-else-if="mounted" type="donut" height="200"
-                :options="cardTypeChartOptions" :series="cardTypeChartSeries" />
+              <Transition name="chart-fade" mode="out-in">
+                <div v-if="loading.cardType" key="skeleton" class="loading-skeleton"></div>
+                <apexchart v-else-if="mounted" key="chart" type="donut" height="200"
+                  :options="cardTypeChartOptions" :series="cardTypeChartSeries" />
+              </Transition>
             </ClientOnly>
           </div>
         </div>
@@ -126,41 +147,47 @@
 
       <!-- Row 3 -->
       <div class="widget-row">
-        <div class="widget-card">
+        <div class="widget-card widget-card--animate" :style="{ animationDelay: '300ms' }">
           <div class="widget-header">
             <span class="widget-title">TOP 10 승차역</span>
           </div>
           <div class="chart-body">
             <ClientOnly>
-              <div v-if="loading.topBoarding" class="loading-skeleton"></div>
-              <apexchart v-else-if="mounted" type="bar" height="200"
-                :options="topBoardingChartOptions" :series="topBoardingChartSeries" />
+              <Transition name="chart-fade" mode="out-in">
+                <div v-if="loading.topBoarding" key="skeleton" class="loading-skeleton"></div>
+                <apexchart v-else-if="mounted" key="chart" type="bar" height="200"
+                  :options="topBoardingChartOptions" :series="topBoardingChartSeries" />
+              </Transition>
             </ClientOnly>
           </div>
         </div>
 
-        <div class="widget-card">
+        <div class="widget-card widget-card--animate" :style="{ animationDelay: '350ms' }">
           <div class="widget-header">
             <span class="widget-title">역별 승하차 불균형 분석</span>
           </div>
           <div class="chart-body">
             <ClientOnly>
-              <div v-if="loading.stationImbalance" class="loading-skeleton"></div>
-              <apexchart v-else-if="mounted" type="bar" height="200"
-                :options="stationImbalanceChartOptions" :series="stationImbalanceChartSeries" />
+              <Transition name="chart-fade" mode="out-in">
+                <div v-if="loading.stationImbalance" key="skeleton" class="loading-skeleton"></div>
+                <apexchart v-else-if="mounted" key="chart" type="bar" height="200"
+                  :options="stationImbalanceChartOptions" :series="stationImbalanceChartSeries" />
+              </Transition>
             </ClientOnly>
           </div>
         </div>
 
-        <div class="widget-card">
+        <div class="widget-card widget-card--animate" :style="{ animationDelay: '400ms' }">
           <div class="widget-header">
             <span class="widget-title">노선별 효율 분석 (TOP 20)</span>
           </div>
           <div class="chart-body">
             <ClientOnly>
-              <div v-if="loading.routeEfficiency" class="loading-skeleton"></div>
-              <apexchart v-else-if="mounted" type="bar" height="200"
-                :options="routeEfficiencyChartOptions" :series="routeEfficiencyChartSeries" />
+              <Transition name="chart-fade" mode="out-in">
+                <div v-if="loading.routeEfficiency" key="skeleton" class="loading-skeleton"></div>
+                <apexchart v-else-if="mounted" key="chart" type="bar" height="200"
+                  :options="routeEfficiencyChartOptions" :series="routeEfficiencyChartSeries" />
+              </Transition>
             </ClientOnly>
           </div>
         </div>
@@ -168,41 +195,47 @@
 
       <!-- Row 4 -->
       <div class="widget-row">
-        <div class="widget-card widget-card--wide">
+        <div class="widget-card widget-card--wide widget-card--animate" :style="{ animationDelay: '450ms' }">
           <div class="widget-header">
             <span class="widget-title">시간대 × 권종 크로스 분석</span>
           </div>
           <div class="chart-body">
             <ClientOnly>
-              <div v-if="loading.hourTicketCross" class="loading-skeleton"></div>
-              <apexchart v-else-if="mounted" type="heatmap" height="200"
-                :options="heatmapChartOptions" :series="heatmapChartSeries" />
+              <Transition name="chart-fade" mode="out-in">
+                <div v-if="loading.hourTicketCross" key="skeleton" class="loading-skeleton"></div>
+                <apexchart v-else-if="mounted" key="chart" type="heatmap" height="200"
+                  :options="heatmapChartOptions" :series="heatmapChartSeries" />
+              </Transition>
             </ClientOnly>
           </div>
         </div>
 
-        <div class="widget-card">
+        <div class="widget-card widget-card--animate" :style="{ animationDelay: '500ms' }">
           <div class="widget-header">
             <span class="widget-title">호선별 TOP 역</span>
           </div>
           <div class="chart-body">
             <ClientOnly>
-              <div v-if="loading.lineTopStations" class="loading-skeleton"></div>
-              <apexchart v-else-if="mounted" type="bar" height="200"
-                :options="lineTopStationsChartOptions" :series="lineTopStationsChartSeries" />
+              <Transition name="chart-fade" mode="out-in">
+                <div v-if="loading.lineTopStations" key="skeleton" class="loading-skeleton"></div>
+                <apexchart v-else-if="mounted" key="chart" type="bar" height="200"
+                  :options="lineTopStationsChartOptions" :series="lineTopStationsChartSeries" />
+              </Transition>
             </ClientOnly>
           </div>
         </div>
 
-        <div class="widget-card">
+        <div class="widget-card widget-card--animate" :style="{ animationDelay: '550ms' }">
           <div class="widget-header">
             <span class="widget-title">무임 운임 면제 현황</span>
           </div>
           <div class="chart-body">
             <ClientOnly>
-              <div v-if="loading.freeFare" class="loading-skeleton"></div>
-              <apexchart v-else-if="mounted" type="line" height="200"
-                :options="freeFareChartOptions" :series="freeFareChartSeries" />
+              <Transition name="chart-fade" mode="out-in">
+                <div v-if="loading.freeFare" key="skeleton" class="loading-skeleton"></div>
+                <apexchart v-else-if="mounted" key="chart" type="line" height="200"
+                  :options="freeFareChartOptions" :series="freeFareChartSeries" />
+              </Transition>
             </ClientOnly>
           </div>
         </div>
@@ -233,92 +266,54 @@ const mounted = ref(false);
 const startDate = ref('2025-10-31');
 const endDate = ref('2025-12-31');
 
-// Loading states
-const loading = ref({
-  daily: true,
-  dayOfWeek: true,
-  hourlyStats: true,
-  dayLines: true,
-  ticketType: true,
-  cardType: true,
-  topBoarding: true,
-  stationImbalance: true,
-  routeEfficiency: true,
-  hourTicketCross: true,
-  lineTopStations: true,
-  freeFare: true,
-  rawSummary: true,
-});
-
-// Raw data refs
-const dailyData = ref<any[]>([]);
-const dayOfWeekData = ref<any[]>([]);
-const hourlyStatsData = ref<any[]>([]);
-const dayLinesData = ref<any[]>([]);
-const ticketTypeData = ref<any[]>([]);
-const cardTypeData = ref<any[]>([]);
-const topBoardingData = ref<any[]>([]);
-const stationImbalanceData = ref<any[]>([]);
-const routeEfficiencyData = ref<any[]>([]);
-const hourTicketCrossData = ref<any[]>([]);
-const lineTopStationsData = ref<any[]>([]);
-const freeFareData = ref<any[]>([]);
-const rawSummaryData = ref<any>({});
-
-const BASE = '/api/proxy/api/transport';
-const params = computed(() => `startDate=${startDate.value}&endDate=${endDate.value}`);
-
-async function fetchAll() {
-  // Reset loading
-  Object.keys(loading.value).forEach(k => (loading.value as any)[k] = true);
-
-  await Promise.allSettled([
-    fetchData(`${BASE}/daily?${params.value}`, dailyData, 'daily'),
-    fetchData(`${BASE}/stats/day-of-week?${params.value}`, dayOfWeekData, 'dayOfWeek'),
-    fetchData(`${BASE}/stats/hourly?${params.value}`, hourlyStatsData, 'hourlyStats'),
-    fetchData(`${BASE}/day-lines?${params.value}`, dayLinesData, 'dayLines'),
-    fetchData(`${BASE}/stats/ticket-type?${params.value}`, ticketTypeData, 'ticketType'),
-    fetchData(`${BASE}/stats/card-type?${params.value}`, cardTypeData, 'cardType'),
-    fetchData(`${BASE}/stats/top-boarding-stations?${params.value}`, topBoardingData, 'topBoarding'),
-    fetchData(`${BASE}/stats/station-imbalance?${params.value}`, stationImbalanceData, 'stationImbalance'),
-    fetchData(`${BASE}/stats/route-efficiency?${params.value}`, routeEfficiencyData, 'routeEfficiency'),
-    fetchData(`${BASE}/stats/hour-ticket-cross?${params.value}`, hourTicketCrossData, 'hourTicketCross'),
-    fetchData(`${BASE}/lines/top-stations?${params.value}`, lineTopStationsData, 'lineTopStations'),
-    fetchData(`${BASE}/stats/free-fare?${params.value}`, freeFareData, 'freeFare'),
-    fetchDataSingle(`${BASE}/stats/raw-summary?${params.value}`, rawSummaryData, 'rawSummary'),
-  ]);
-}
-
 function authHeaders() {
   const token = authStore.accessToken;
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function fetchData(url: string, dataRef: any, loadingKey: string) {
-  try {
-    const res: any = await $fetch(url, { headers: authHeaders() });
-    dataRef.value = res?.data ?? res ?? [];
-  } catch (e) {
-    dataRef.value = [];
-  } finally {
-    (loading.value as any)[loadingKey] = false;
-  }
+// Single batch endpoint — all 13 queries combined server-side
+const { data: dashboardData, pending: isDataLoading, refresh: refreshData } = useLazyAsyncData(
+  'dashboard-transport-data',
+  () => $fetch('/api/transport/batch', {
+    headers: authHeaders(),
+    params: { startDate: startDate.value, endDate: endDate.value },
+  }),
+  { server: false },
+);
+
+// Computed accessors from the single data source
+const dailyData = computed(() => dashboardData.value?.daily ?? []);
+const dayOfWeekData = computed(() => dashboardData.value?.dayOfWeek ?? []);
+const hourlyStatsData = computed(() => dashboardData.value?.hourlyStats ?? []);
+const dayLinesData = computed(() => dashboardData.value?.dayLines ?? []);
+const ticketTypeData = computed(() => dashboardData.value?.ticketType ?? []);
+const cardTypeData = computed(() => dashboardData.value?.cardType ?? []);
+const topBoardingData = computed(() => dashboardData.value?.topBoarding ?? []);
+const stationImbalanceData = computed(() => dashboardData.value?.stationImbalance ?? []);
+const routeEfficiencyData = computed(() => dashboardData.value?.routeEfficiency ?? []);
+const hourTicketCrossData = computed(() => dashboardData.value?.hourTicketCross ?? []);
+const lineTopStationsData = computed(() => dashboardData.value?.lineTopStations ?? []);
+const freeFareData = computed(() => dashboardData.value?.freeFare ?? []);
+const rawSummaryData = computed(() => dashboardData.value?.rawSummary ?? {});
+
+// Unified loading state derived from useLazyAsyncData
+const loading = computed(() => {
+  const isLoading = isDataLoading.value;
+  return {
+    daily: isLoading, dayOfWeek: isLoading, hourlyStats: isLoading,
+    dayLines: isLoading, ticketType: isLoading, cardType: isLoading,
+    topBoarding: isLoading, stationImbalance: isLoading, routeEfficiency: isLoading,
+    hourTicketCross: isLoading, lineTopStations: isLoading, freeFare: isLoading,
+    rawSummary: isLoading,
+  };
+});
+
+async function fetchAll() {
+  await refreshData();
 }
 
-async function fetchDataSingle(url: string, dataRef: any, loadingKey: string) {
-  try {
-    const res: any = await $fetch(url, { headers: authHeaders() });
-    dataRef.value = res?.data ?? res ?? {};
-  } catch (e) {
-    dataRef.value = {};
-  } finally {
-    (loading.value as any)[loadingKey] = false;
-  }
-}
-
-onMounted(async () => {
+onMounted(() => {
   mounted.value = true;
-  await fetchAll();
 });
 
 // --- Summary Cards ---
@@ -332,7 +327,17 @@ const summaryCards = computed(() => [
 
 // Common chart options
 const commonOptions = {
-  chart: { toolbar: { show: false }, background: 'transparent' },
+  chart: {
+    toolbar: { show: false },
+    background: 'transparent',
+    animations: {
+      enabled: true,
+      easing: 'easeinout',
+      speed: 600,
+      animateGradually: { enabled: true, delay: 80 },
+      dynamicAnimation: { enabled: true, speed: 300 },
+    },
+  },
   dataLabels: { enabled: false },
   grid: { borderColor: '#F3F4F6', yaxis: { lines: { show: true } }, xaxis: { lines: { show: false } } },
   tooltip: { theme: 'light' },
@@ -666,6 +671,14 @@ const freeFareChartOptions = computed(() => ({
   display: flex;
   align-items: center;
   gap: 12px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.stat-card--loaded {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .stat-icon {
@@ -756,9 +769,51 @@ const freeFareChartOptions = computed(() => ({
   border-radius: 4px;
 }
 
+/* Stat value skeleton */
+.stat-skeleton {
+  display: inline-block;
+  width: 80px;
+  height: 22px;
+  background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+
+/* Widget card entrance animation */
+.widget-card--animate {
+  animation: widgetSlideUp 0.5s ease both;
+}
+
+@keyframes widgetSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Chart fade transition (skeleton -> chart) */
+.chart-fade-enter-active {
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.chart-fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+.chart-fade-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.chart-fade-leave-to {
+  opacity: 0;
 }
 
 @media (max-width: 1200px) {

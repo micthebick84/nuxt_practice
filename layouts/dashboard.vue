@@ -90,22 +90,24 @@
         </div>
       </nav>
 
-      <!-- Footer -->
-      <div v-if="!sidebarCollapsed" class="sidebar-footer">
-        <div class="sidebar-divider"></div>
-        <div class="profile-section">
-          <div class="profile-avatar">
-            <span>{{ userInitial }}</span>
+      <!-- Footer (client-only to prevent SSR hydration mismatch on user data) -->
+      <ClientOnly>
+        <div v-if="!sidebarCollapsed" class="sidebar-footer">
+          <div class="sidebar-divider"></div>
+          <div class="profile-section">
+            <div class="profile-avatar">
+              <span>{{ userInitial }}</span>
+            </div>
+            <div class="profile-info">
+              <div class="profile-name">{{ userName }}</div>
+              <div class="profile-email">{{ userEmail }}</div>
+            </div>
+            <button class="logout-btn" @click="handleLogout">
+              <LogOut :size="18" color="#888888" />
+            </button>
           </div>
-          <div class="profile-info">
-            <div class="profile-name">{{ userName }}</div>
-            <div class="profile-email">{{ userEmail }}</div>
-          </div>
-          <button class="logout-btn" @click="handleLogout">
-            <LogOut :size="18" color="#888888" />
-          </button>
         </div>
-      </div>
+      </ClientOnly>
     </aside>
 
     <!-- Content Area -->
@@ -229,16 +231,28 @@ const expandActiveGroups = () => {
 
 onMounted(async () => {
   authStore.initializeAuth();
-  if (authStore.user?.userId) {
-    try {
-      await Promise.all([
-        userStore.fetchProfile(authStore.user.userId),
-        menuStore.fetchMenus(),
-      ]);
-      expandActiveGroups();
-    } catch (error) {
-      // Continue even if fetch fails
-    }
+  if (!authStore.user?.userId) return;
+
+  // Dedup rapid re-mounts during Nuxt re-initialization (dev mode)
+  const DEDUP_KEY = 'dashboard_layout_init';
+  const DEDUP_TTL = 3000; // 3 seconds
+  const now = Date.now();
+  const last = Number(sessionStorage.getItem(DEDUP_KEY) || '0');
+  if (now - last < DEDUP_TTL) {
+    // Already fetched very recently — just expand menus from cached store
+    expandActiveGroups();
+    return;
+  }
+  sessionStorage.setItem(DEDUP_KEY, String(now));
+
+  try {
+    await Promise.all([
+      userStore.fetchProfile(authStore.user.userId),
+      menuStore.fetchMenus(),
+    ]);
+    expandActiveGroups();
+  } catch (error) {
+    // Continue even if fetch fails
   }
 });
 

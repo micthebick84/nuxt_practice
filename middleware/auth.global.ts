@@ -22,8 +22,12 @@ export default defineNuxtRouteMiddleware((to) => {
 
   // On server side, check cookie for authentication
   if (!process.client) {
-    const cookie = useCookie('isAuthenticated');
-    const isAuthenticated = cookie.value === 'true';
+    // Read cookies directly from request headers (more reliable than useCookie in middleware)
+    const headers = useRequestHeaders(['cookie']);
+    const cookieStr = headers.cookie || '';
+    const hasAuthSession = cookieStr.includes('auth_session=true');
+    const hasIsAuthenticated = cookieStr.includes('isAuthenticated=true');
+    const isAuthenticated = hasAuthSession || hasIsAuthenticated;
 
     // Unauthenticated users accessing protected pages -> redirect to OAuth
     if (!isAuthenticated && !publicPages.includes(to.path)) {

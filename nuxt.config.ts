@@ -1,3 +1,36 @@
+import { existsSync, readFileSync } from 'node:fs';
+
+// Vite plugin to fix non-ASCII (Korean) path resolution in SSR build
+function fixNonAsciiPaths() {
+  return {
+    name: 'fix-non-ascii-paths',
+    enforce: 'pre' as const,
+    load(id: string) {
+      // Only handle .vue style queries that fail due to unicode-escaped paths
+      if (id.includes('?vue&type=style') && !existsSync(id.split('?')[0])) {
+        // Try decoding the unicode escape sequences back to actual characters
+        const decoded = id.split('?')[0].replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) =>
+          String.fromCharCode(parseInt(hex, 16))
+        );
+        if (existsSync(decoded)) {
+          // Let @vitejs/plugin-vue handle it with the corrected path
+          return undefined;
+        }
+      }
+      return undefined;
+    },
+    resolveId(id: string) {
+      if (id.includes('\\u') && id.includes('.vue')) {
+        const decoded = id.replace(/\\u([0-9a-fA-F]{4})/g, (_, hex: string) =>
+          String.fromCharCode(parseInt(hex, 16))
+        );
+        if (decoded !== id) return decoded;
+      }
+      return undefined;
+    },
+  };
+}
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
@@ -38,15 +71,10 @@ export default defineNuxtConfig({
     ],
   },
   ssr: true,
-  nitro: {
-    devProxy: {
-      '/api/proxy': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-        prependPath: true,
-      }
-    }
+  vite: {
+    plugins: [fixNonAsciiPaths()],
   },
+  nitro: {},
   runtimeConfig: {
     // Server-only (secret)
     oauth: {

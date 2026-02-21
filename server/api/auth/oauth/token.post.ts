@@ -1,10 +1,8 @@
-import { defineEventHandler, readBody, createError } from 'h3';
+import { defineEventHandler, readBody, createError, setCookie } from 'h3';
 
 export default defineEventHandler(async (event) => {
-  console.log('=== Token exchange API called ===');
   const body = await readBody(event);
   const { code } = body;
-  console.log('Token exchange - code received:', code ? 'yes' : 'no');
 
   if (!code) {
     throw createError({
@@ -36,6 +34,16 @@ export default defineEventHandler(async (event) => {
         code,
         redirect_uri: oauth.redirectUri,
       }).toString(),
+    });
+
+    // Set httpOnly cookie so SSR middleware can detect auth state reliably
+    const maxAge = tokenResponse.expires_in || 3600;
+    setCookie(event, 'auth_session', 'true', {
+      httpOnly: true,
+      secure: false,
+      path: '/',
+      maxAge,
+      sameSite: 'lax' as const,
     });
 
     return tokenResponse;
