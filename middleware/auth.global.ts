@@ -5,8 +5,8 @@ export default defineNuxtRouteMiddleware((to) => {
   const publicPages = ['/login', '/signup', '/auth/callback', '/about', '/dashboard/traffic'];
   const config = useRuntimeConfig();
 
-  // Build OAuth authorization URL
-  const buildOAuthUrl = () => {
+  // Build OAuth authorization URL, optionally encoding a post-login redirect path in state
+  const buildOAuthUrl = (redirectPath?: string) => {
     const oauth = config.public.oauth;
     const params = new URLSearchParams({
       response_type: 'code',
@@ -14,6 +14,9 @@ export default defineNuxtRouteMiddleware((to) => {
       redirect_uri: oauth.redirectUri,
       scope: oauth.scope,
     });
+    if (redirectPath) {
+      params.set('state', encodeURIComponent(redirectPath));
+    }
     return `${oauth.authorizationEndpoint}?${params.toString()}`;
   };
 
@@ -28,7 +31,7 @@ export default defineNuxtRouteMiddleware((to) => {
       if (to.query.logout === 'true') {
         return navigateTo('/login?logout=true');
       }
-      return navigateTo(buildOAuthUrl(), { external: true });
+      return navigateTo(buildOAuthUrl(to.fullPath), { external: true });
     }
 
     // Authenticated users accessing login/signup -> redirect to course
@@ -54,7 +57,10 @@ export default defineNuxtRouteMiddleware((to) => {
     if (to.query.logout === 'true') {
       return navigateTo('/login?logout=true');
     }
-    return navigateTo(buildOAuthUrl(), { external: true });
+    if (process.client) {
+      sessionStorage.setItem('oauth_redirect', to.fullPath);
+    }
+    return navigateTo(buildOAuthUrl(to.fullPath), { external: true });
   }
 
   // Root path (/) redirects based on authentication status

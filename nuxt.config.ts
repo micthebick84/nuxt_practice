@@ -10,6 +10,7 @@ export default defineNuxtConfig({
     typeCheck: false,
   },
   devtools: { enabled: true },
+  css: ['gridstack/dist/gridstack.min.css'],
   modules: [
     'nuxt-quasar-ui',
     '@pinia/nuxt',

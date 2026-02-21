@@ -96,8 +96,21 @@ onMounted(async () => {
     await authStore.exchangeCodeForTokens(code);
     console.log('OAuth callback - token exchange successful');
 
+    // Determine redirect target: state param > sessionStorage > default
+    let redirectPath = '/dashboard';
+    if (state) {
+      try {
+        const decoded = decodeURIComponent(state);
+        if (decoded.startsWith('/')) redirectPath = decoded;
+      } catch {}
+    } else {
+      const saved = sessionStorage.getItem('oauth_redirect');
+      if (saved && saved.startsWith('/')) redirectPath = saved;
+    }
+    sessionStorage.removeItem('oauth_redirect');
+
     // Use navigateTo with replace to prevent back navigation issues
-    await navigateTo('/course', { replace: true });
+    await navigateTo(redirectPath, { replace: true });
   } catch (err: any) {
     console.error('OAuth callback error:', err);
     error.value = err.message || 'Failed to complete authentication';

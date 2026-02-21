@@ -24,6 +24,7 @@ const GUID_URL_MAP: Record<string, string> = {
   '2C6D4E2D-D444-4697-B77B-34B2BE34151A': '/main/oms/noticeBoardList',
   '793B0AAA-8FBD-11ED-8D27-005056010014': '/main/bigdata/dataMgmt',
   'DDAB0AAA-8FBD-11ED-8D27-005056010014': '/main/bigdata/dataAnalysis',
+  'A1BC0AAA-8FBD-11ED-8D27-005056010014': '/main/bigdata/widget',
   '9F76B61A-0219-490C-A8C8-DAC26A949CD5': '/main/env/grpMgmt',
   '1D26DA5D-C6DA-4FD1-8D0B-6B82CC84058A': '/main/env/userConf',
 };
