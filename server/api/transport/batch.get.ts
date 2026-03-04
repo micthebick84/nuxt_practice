@@ -49,7 +49,9 @@ export default defineEventHandler(async (event) => {
     headers['Authorization'] = auth;
   }
 
-  const BASE = 'http://localhost:8080/api/transport';
+  const config = useRuntimeConfig();
+  const apiBaseUrl = config.public.apiBaseUrl || 'http://localhost:8080';
+  const BASE = `${apiBaseUrl}/api/transport`;
 
   const fetchOne = async (path: string) => {
     try {

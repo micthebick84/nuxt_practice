@@ -1,6 +1,8 @@
 export default defineEventHandler(async (event) => {
+  const config = useRuntimeConfig();
+  const apiBaseUrl = config.public.apiBaseUrl || 'http://localhost:8080';
   const path = event.context.params?.path || '';
-  const targetUrl = `http://localhost:8080/${path}`;
+  const targetUrl = `${apiBaseUrl}/${path}`;
 
   const query = getQuery(event);
   const queryString = new URLSearchParams(query as Record<string, string>).toString();

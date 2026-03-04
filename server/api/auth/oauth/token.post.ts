@@ -2,7 +2,7 @@ import { defineEventHandler, readBody, createError, setCookie } from 'h3';
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
-  const { code } = body;
+  const { code, redirect_uri: clientRedirectUri } = body;
 
   if (!code) {
     throw createError({
@@ -14,6 +14,10 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
   const oauth = config.public.oauth;
   const clientSecret = config.oauth.clientSecret;
+
+  // Use the redirect_uri that was actually used in the authorization request
+  // (important when accessing via IP instead of localhost)
+  const redirectUri = clientRedirectUri || oauth.redirectUri;
 
   try {
     // Exchange authorization code for tokens
@@ -32,7 +36,7 @@ export default defineEventHandler(async (event) => {
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         code,
-        redirect_uri: oauth.redirectUri,
+        redirect_uri: redirectUri,
       }).toString(),
     });
 

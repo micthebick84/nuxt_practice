@@ -89,11 +89,10 @@ export const useMenuStore = defineStore('menu', {
 
   actions: {
     async fetchComUser(userId: string) {
-      const config = useRuntimeConfig();
       const authStore = useAuthStore();
       try {
         const response = await $fetch<{ success: boolean; data: { auth: string; menuAuthNo: number | null } }>(
-          `${config.public.apiBaseUrl}/api/users/com/${userId}`,
+          `/api/proxy/api/users/com/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${authStore.accessToken}`,
@@ -130,7 +129,7 @@ export const useMenuStore = defineStore('menu', {
         });
 
         const response = await $fetch<{ success: boolean; data: BackendPage[] }>(
-          `${config.public.apiBaseUrl}/api/menus/hierarchical?${params.toString()}`,
+          `/api/proxy/api/menus/hierarchical?${params.toString()}`,
           {
             headers: {
               Authorization: `Bearer ${authStore.accessToken}`,

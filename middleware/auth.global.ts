@@ -1,9 +1,11 @@
 import { useAuthStore } from '~/stores/auth';
+import { useOAuthUrls } from '~/composables/useOAuthUrls';
 
 export default defineNuxtRouteMiddleware((to) => {
   // List of public pages (accessible without authentication)
   const publicPages = ['/login', '/signup', '/auth/callback', '/about', '/dashboard/traffic'];
   const config = useRuntimeConfig();
+  const oauthUrls = useOAuthUrls();
 
   // Build OAuth authorization URL, optionally encoding a post-login redirect path in state
   const buildOAuthUrl = (redirectPath?: string) => {
@@ -11,13 +13,13 @@ export default defineNuxtRouteMiddleware((to) => {
     const params = new URLSearchParams({
       response_type: 'code',
       client_id: oauth.clientId,
-      redirect_uri: oauth.redirectUri,
+      redirect_uri: oauthUrls.redirectUri,
       scope: oauth.scope,
     });
     if (redirectPath) {
       params.set('state', encodeURIComponent(redirectPath));
     }
-    return `${oauth.authorizationEndpoint}?${params.toString()}`;
+    return `${oauthUrls.authorizationEndpoint}?${params.toString()}`;
   };
 
   // On server side, check cookie for authentication

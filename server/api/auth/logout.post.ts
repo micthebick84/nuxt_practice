@@ -22,6 +22,8 @@ export default defineEventHandler(async (event) => {
 
   try {
     // Call OAuth server logout endpoint
+    const config = useRuntimeConfig();
+    const authBaseUrl = config.public.oauth.tokenEndpoint.replace('/oauth2/token', '');
     const response = await $fetch<{
       success: boolean;
       message: string;
@@ -29,7 +31,7 @@ export default defineEventHandler(async (event) => {
         revoked: boolean;
         message: string;
       };
-    }>('http://localhost:9000/api/auth/logout/bearer', {
+    }>(`${authBaseUrl}/api/auth/logout/bearer`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,

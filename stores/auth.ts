@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { useOAuthUrls } from '~/composables/useOAuthUrls';
 
 interface User {
   id: string;
@@ -33,20 +34,21 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    // Generate OAuth authorization URL
+    // Generate OAuth authorization URL (dynamically resolves host for IP access)
     getAuthorizationUrl(state?: string) {
       const config = useRuntimeConfig();
       const oauth = config.public.oauth;
+      const oauthUrls = useOAuthUrls();
 
       const params = new URLSearchParams({
         response_type: 'code',
         client_id: oauth.clientId,
-        redirect_uri: oauth.redirectUri,
+        redirect_uri: oauthUrls.redirectUri,
         scope: oauth.scope,
         state: state || this.generateState(),
       });
 
-      return `${oauth.authorizationEndpoint}?${params.toString()}`;
+      return `${oauthUrls.authorizationEndpoint}?${params.toString()}`;
     },
 
     // Generate random state for CSRF protection
@@ -77,6 +79,9 @@ export const useAuthStore = defineStore('auth', {
     async exchangeCodeForTokens(code: string) {
       this.isLoading = true;
       try {
+        // Send the actual redirect_uri used in the authorization request
+        // so the token exchange matches (important for IP-based access)
+        const oauthUrls = useOAuthUrls();
         const response = await $fetch<{
           access_token: string;
           refresh_token?: string;
@@ -85,7 +90,7 @@ export const useAuthStore = defineStore('auth', {
           token_type?: string;
         }>('/api/auth/oauth/token', {
           method: 'POST',
-          body: { code },
+          body: { code, redirect_uri: oauthUrls.redirectUri },
         });
 
         const tokens: OAuthTokens = {
@@ -209,18 +214,15 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Generate OAuth logout URL
+    // Generate OAuth logout URL (dynamically resolves host for IP access)
     getLogoutUrl() {
-      const config = useRuntimeConfig();
-      const oauth = config.public.oauth;
+      const oauthUrls = useOAuthUrls();
 
-      // Spring Authorization Server logout endpoint
-      // Add logout=true query param to prevent auto-redirect on login page
       const params = new URLSearchParams({
-        post_logout_redirect_uri: `${oauth.postLogoutRedirectUri}?logout=true`,
+        post_logout_redirect_uri: `${oauthUrls.postLogoutRedirectUri}?logout=true`,
       });
 
-      return `${oauth.logoutEndpoint}?${params.toString()}`;
+      return `${oauthUrls.logoutEndpoint}?${params.toString()}`;
     },
 
     // Logout - revokes token on OAuth server and clears local state
@@ -249,12 +251,14 @@ export const useAuthStore = defineStore('auth', {
         // Use OIDC RP-Initiated Logout to clear OAuth server session
         // id_token_hint is REQUIRED by the OAuth server
         const config = useRuntimeConfig();
-        const logoutUrl = new URL('http://localhost:9000/connect/logout');
+        const oauthUrls = useOAuthUrls();
+        const authBase = oauthUrls.logoutEndpoint.replace('/logout', '');
+        const logoutUrl = new URL(`${authBase}/connect/logout`);
 
         // id_token_hint is required for OIDC logout
         if (idToken) {
           logoutUrl.searchParams.set('id_token_hint', idToken);
-          logoutUrl.searchParams.set('post_logout_redirect_uri', 'http://localhost:3000/');
+          logoutUrl.searchParams.set('post_logout_redirect_uri', oauthUrls.postLogoutRedirectUri.replace('?logout=true', '/'));
           logoutUrl.searchParams.set('client_id', config.public.oauth.clientId);
           window.location.href = logoutUrl.toString();
         } else {
