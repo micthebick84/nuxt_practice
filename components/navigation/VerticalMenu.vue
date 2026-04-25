@@ -1,7 +1,7 @@
 <template>
   <div class="vertical-menu column no-wrap full-height">
     <!-- Header -->
-    <q-item class="menu-header bg-primary text-white">
+    <q-item :class="['menu-header bg-primary text-white', { 'menu-header--mini': state.miniMode }]">
       <q-item-section avatar v-if="!state.miniMode" class="menu-logo-section">
         <div class="row items-center no-wrap">
           <img
@@ -141,6 +141,26 @@ const handleLogout = () => {
 
 .menu-header {
   min-height: 64px;
+}
+
+/* Open mode: collapse icon at right, aligned with menu group chevrons */
+.menu-header:not(.menu-header--mini) :deep(.q-item__section--side) {
+  margin-left: auto;
+  padding-right: 0;
+}
+.menu-header:not(.menu-header--mini) :deep(.toggle-btn) {
+  margin-right: -5px;
+}
+
+/* Mini mode: center the collapse icon */
+.menu-header--mini {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+.menu-header--mini :deep(.q-item__section--side) {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .toggle-btn {
