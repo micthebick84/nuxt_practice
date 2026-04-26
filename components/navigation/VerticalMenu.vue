@@ -2,14 +2,12 @@
   <div class="vertical-menu column no-wrap full-height">
     <!-- Header -->
     <q-item :class="['menu-header bg-primary text-white', { 'menu-header--mini': state.miniMode }]">
-      <q-item-section avatar v-if="!state.miniMode" class="menu-logo-section">
-        <div class="row items-center no-wrap">
-          <img
-            src="/images/humetro-logo-new.png"
-            alt="Humetro Logo"
-            class="humetro-logo"
-          />
-          <!-- <span class="logo-text text-white text-weight-bold q-ml-sm">부산교통공사</span> -->
+      <q-item-section v-if="!state.miniMode" class="menu-logo-section">
+        <div class="menu-brand-text">
+          <div class="menu-brand-name">
+            Netis <span class="menu-brand-version">v7.0</span>
+          </div>
+          <div class="menu-brand-tag">통합 망관리 시스템</div>
         </div>
       </q-item-section>
       <!-- <q-item-section v-if="!state.miniMode"> -->
@@ -184,20 +182,36 @@ const handleLogout = () => {
   background-color: rgba(255, 0, 0, 0.05);
 }
 
-.humetro-logo {
-  height: 28px;
-  width: auto;
-  max-width: 120px;
-  object-fit: cover;
-  object-position: left center;
-}
-
 .menu-logo-section {
   min-width: 0;
 }
 
-.logo-text {
-  font-size: 14px;
+.menu-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
   white-space: nowrap;
+}
+.menu-brand-name {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+.menu-brand-version {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.75;
+  background: rgba(255, 255, 255, 0.18);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.menu-brand-tag {
+  font-size: 11px;
+  opacity: 0.85;
+  margin-top: 2px;
+  color: #fff;
 }
 </style>
